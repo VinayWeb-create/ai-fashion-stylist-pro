@@ -1,16 +1,14 @@
 """
-AI Fashion Stylist Pro - Flask Backend API
-Stable, production-ready backend with Gemini + Mock fallback
+AI Fashion Stylist Pro - Flask Backend
+Rule-based outfit generation with internet shopping links
+No Gemini / No LLM / Stable production backend
 """
 
 import os
-import json
-import re
 import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-
 
 # =====================================
 # App Setup
@@ -22,9 +20,8 @@ app = Flask(__name__)
 CORS(app)
 
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp"}
-
-
 
 # =====================================
 # Helpers
@@ -34,54 +31,173 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def extract_json_from_text(text: str) -> dict:
+def generate_shopping_links(item_name: str):
     """
-    Safely extract JSON object from LLM output
+    Generate e-commerce search URLs for an item
     """
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if not match:
-        raise ValueError("No valid JSON found in AI response")
-    return json.loads(match.group())
-
-
-def mock_recommendation(occasion, climate, clothing_style):
-    """
-    Fallback response when Gemini is unavailable
-    """
+    query = item_name.replace(" ", "+").lower()
     return {
-        "clothing_type": "Smart Casual",
-        "confidence": 0.94,
-        "face_detection": {
-            "detected": False,
-            "skin_tone": "Not analyzed",
-            "description": "Mock AI response (Gemini disabled)"
-        },
-        "outfits": [
-            {
-                "name": "Everyday Casual",
-                "description": "Clean and comfortable everyday style",
-                "items": ["T-shirt", "Jeans", "Overshirt"],
-                "colors": ["Navy", "White"],
-                "accessories": ["Watch"],
-                "footwear": "Sneakers",
-                "reasoning": "Works well for casual outings and daily wear"
-            },
-            {
-                "name": "Minimal Smart",
-                "description": "Simple and modern outfit",
-                "items": ["Plain Shirt", "Chinos"],
-                "colors": ["Beige", "White"],
-                "accessories": ["Belt"],
-                "footwear": "Loafers",
-                "reasoning": "Professional yet relaxed appearance"
-            }
-        ]
+        "item": item_name,
+        "links": {
+            "amazon": f"https://www.amazon.in/s?k={query}",
+            "flipkart": f"https://www.flipkart.com/search?q={query}",
+            "meesho": f"https://www.meesho.com/search?q={query}"
+        }
     }
 
-# =====================================
-# Gemini Integration
-# =====================================
 
+def generate_outfits(occasion, climate, clothing_style):
+    """
+    Rule-based outfit generator
+    """
+
+    outfits = []
+
+    # ==========================
+    # CASUAL
+    # ==========================
+    if occasion == "casual":
+        outfits = [
+            {
+                "name": "Everyday Casual",
+                "description": "Comfortable and stylish daily wear",
+                "reasoning": "Simple fabrics and neutral colors for daily comfort",
+                "items": ["White Cotton T-Shirt", "Blue Jeans"],
+                "colors": ["White", "Blue"],
+                "accessories": ["Watch"],
+                "footwear": "White Sneakers"
+            },
+            {
+                "name": "Smart Casual",
+                "description": "Polished yet relaxed look",
+                "reasoning": "Perfect for college, office casual days, or meetups",
+                "items": ["Casual Shirt", "Slim Fit Chinos"],
+                "colors": ["Beige", "Navy"],
+                "accessories": ["Leather Belt"],
+                "footwear": "Loafers"
+            },
+            {
+                "name": "Relaxed Evening",
+                "description": "Easy-going evening outfit",
+                "reasoning": "Ideal for evening outings or coffee meetups",
+                "items": ["Polo T-Shirt", "Black Jeans"],
+                "colors": ["Black"],
+                "accessories": ["Bracelet"],
+                "footwear": "Casual Shoes"
+            }
+        ]
+
+    # ==========================
+    # FORMAL
+    # ==========================
+    elif occasion == "formal":
+        outfits = [
+            {
+                "name": "Classic Formal",
+                "description": "Professional and elegant outfit",
+                "reasoning": "Traditional formal combination for meetings and offices",
+                "items": ["White Formal Shirt", "Black Trousers"],
+                "colors": ["White", "Black"],
+                "accessories": ["Leather Watch"],
+                "footwear": "Formal Shoes"
+            },
+            {
+                "name": "Modern Business",
+                "description": "Clean modern business attire",
+                "reasoning": "Sharp look suitable for presentations",
+                "items": ["Light Blue Shirt", "Grey Trousers"],
+                "colors": ["Light Blue", "Grey"],
+                "accessories": ["Belt"],
+                "footwear": "Oxford Shoes"
+            },
+            {
+                "name": "Executive Look",
+                "description": "Premium corporate outfit",
+                "reasoning": "Creates authority and confidence",
+                "items": ["Formal Blazer", "White Shirt", "Formal Pants"],
+                "colors": ["Navy", "White"],
+                "accessories": ["Tie"],
+                "footwear": "Derby Shoes"
+            }
+        ]
+
+    # ==========================
+    # PARTY
+    # ==========================
+    elif occasion == "party":
+        outfits = [
+            {
+                "name": "Party Casual",
+                "description": "Trendy and relaxed party outfit",
+                "reasoning": "Stylish yet comfortable for social events",
+                "items": ["Printed Shirt", "Dark Jeans"],
+                "colors": ["Black", "Maroon"],
+                "accessories": ["Chain"],
+                "footwear": "Sneakers"
+            },
+            {
+                "name": "Night Out",
+                "description": "Bold evening party look",
+                "reasoning": "Dark tones give a premium night vibe",
+                "items": ["Black Shirt", "Slim Jeans"],
+                "colors": ["Black"],
+                "accessories": ["Watch"],
+                "footwear": "Chelsea Boots"
+            },
+            {
+                "name": "Stylish Party",
+                "description": "Fashion-forward party wear",
+                "reasoning": "Modern cuts elevate appearance",
+                "items": ["Designer Shirt", "Tailored Pants"],
+                "colors": ["Charcoal"],
+                "accessories": ["Bracelet"],
+                "footwear": "Formal Shoes"
+            }
+        ]
+
+    # ==========================
+    # ETHNIC
+    # ==========================
+    elif occasion == "ethnic":
+        outfits = [
+            {
+                "name": "Traditional Ethnic",
+                "description": "Classic ethnic wear",
+                "reasoning": "Perfect for festivals and ceremonies",
+                "items": ["Kurta", "Pajama"],
+                "colors": ["Cream", "Gold"],
+                "accessories": ["Ethnic Bracelet"],
+                "footwear": "Mojari"
+            },
+            {
+                "name": "Festive Look",
+                "description": "Bright festive attire",
+                "reasoning": "Vibrant colors suit celebrations",
+                "items": ["Printed Kurta", "Churidar"],
+                "colors": ["Maroon", "Beige"],
+                "accessories": ["Stole"],
+                "footwear": "Kolhapuri Chappals"
+            },
+            {
+                "name": "Modern Ethnic",
+                "description": "Fusion ethnic style",
+                "reasoning": "Traditional with a modern twist",
+                "items": ["Short Kurta", "Jeans"],
+                "colors": ["Indigo"],
+                "accessories": ["Watch"],
+                "footwear": "Ethnic Loafers"
+            }
+        ]
+
+    # ==========================
+    # Attach Shopping Links
+    # ==========================
+    for outfit in outfits:
+        outfit["shopping_links"] = [
+            generate_shopping_links(item) for item in outfit["items"]
+        ]
+
+    return outfits
 
 # =====================================
 # Routes
@@ -91,8 +207,7 @@ def mock_recommendation(occasion, climate, clothing_style):
 def index():
     return jsonify({
         "status": "success",
-        "message": "AI Fashion Stylist Pro API running",
-        "gemini_enabled": USE_GEMINI
+        "message": "AI Fashion Stylist Pro API running (No AI mode)"
     })
 
 
@@ -119,25 +234,20 @@ def predict():
         climate = request.form.get("climate", "moderate")
         clothing_style = request.form.get("clothing_style", "unisex")
 
-        image_bytes = file.read()
-
-        # Use Gemini or fallback
-        if USE_GEMINI:
-            prediction = get_gemini_recommendations(
-                image_bytes,
-                file.content_type,
-                occasion,
-                climate,
-                clothing_style
-            )
-        else:
-            prediction = mock_recommendation(
-                occasion, climate, clothing_style
-            )
+        outfits = generate_outfits(occasion, climate, clothing_style)
 
         return jsonify({
             "status": "success",
-            "prediction": prediction
+            "prediction": {
+                "clothing_type": "Outfit Recommendation",
+                "confidence": 0.93,
+                "face_detection": {
+                    "detected": False,
+                    "skin_tone": "Not analyzed",
+                    "description": "Face detection disabled"
+                },
+                "outfits": outfits
+            }
         }), 200
 
     except Exception as e:
@@ -153,4 +263,3 @@ def predict():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
