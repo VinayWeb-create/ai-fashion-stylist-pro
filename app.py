@@ -497,6 +497,103 @@ def filter_outfits(occasion, climate, clothing_style, age_group, color_preferenc
     
     return filtered[:3]
 
+def generate_style_tips(clothing_style, climate, occasion, skin_tone=None, undertone=None, detect_face=False):
+    tips = []
+    
+    fashion_tips = {
+        "casual_hot": [
+            "Choose breathable fabrics like cotton and linen for maximum comfort",
+            "Light colors reflect heat better than dark ones",
+            "Layer with lightweight pieces for versatile styling"
+        ],
+        "casual_moderate": [
+            "Mix textures to add visual interest to your outfit",
+            "Transitional pieces work well in changing weather",
+            "Accessorize to elevate a simple look"
+        ],
+        "casual_cold": [
+            "Layer strategically with base, mid, and outer layers",
+            "Invest in quality outerwear that complements your wardrobe",
+            "Don't forget warm accessories like scarves and gloves"
+        ],
+        "formal_hot": [
+            "Opt for lightweight formal fabrics to stay cool",
+            "Choose tailored fits that allow air circulation",
+            "Keep accessories minimal and elegant"
+        ],
+        "formal_moderate": [
+            "Classic silhouettes never go out of style",
+            "Ensure proper fit for a polished appearance",
+            "Coordinate colors for a cohesive look"
+        ],
+        "formal_cold": [
+            "Wool and wool-blend suits provide warmth and sophistication",
+            "Layer with dress shirts and vests for added warmth",
+            "Choose darker colors for formal winter events"
+        ]
+    }
+    
+    key = f"{occasion}_{climate}"
+    if key in fashion_tips:
+        tips.extend(fashion_tips[key][:2])
+    
+    if clothing_style == "mens":
+        tips.append("Keep your look sharp with well-fitted clothing")
+    elif clothing_style == "womens":
+        tips.append("Balance proportions to create a flattering silhouette")
+    
+    if detect_face and skin_tone:
+        if skin_tone in ["fair", "light"]:
+            tips.append("Use a gentle, hydrating face wash suitable for sensitive skin")
+            tips.append("Apply SPF 50 sunscreen daily to protect fair skin from UV damage")
+            if climate == "cold":
+                tips.append("Use a rich cream moisturizer to combat dryness in cold weather")
+            else:
+                tips.append("A lightweight hydrating moisturizer keeps skin balanced")
+        elif skin_tone in ["wheatish", "medium"]:
+            tips.append("A gel-based face wash helps maintain your skin's natural balance")
+            tips.append("SPF 30+ sunscreen is essential for daily protection")
+            if climate == "hot":
+                tips.append("Use an oil-free moisturizer to prevent excess shine in humid weather")
+            else:
+                tips.append("A lightweight moisturizer provides hydration without heaviness")
+        elif skin_tone in ["dusky", "deep"]:
+            tips.append("Use a cream-based cleanser to nourish and cleanse deeply")
+            tips.append("SPF 30 sunscreen helps protect against sun damage and hyperpigmentation")
+            tips.append("A nourishing moisturizer keeps your skin healthy and glowing")
+        
+        if undertone == "warm":
+            if clothing_style == "womens":
+                tips.append("Warm-toned makeup bases complement your natural undertone beautifully")
+        elif undertone == "cool":
+            if clothing_style == "womens":
+                tips.append("Cool or neutral makeup bases enhance your natural complexion")
+        
+        if clothing_style == "mens":
+            tips.append("Keep facial hair well-groomed with regular trimming and beard oil")
+        elif clothing_style == "womens":
+            tips.append("Choose lip and blush shades that harmonize with your outfit colors")
+    else:
+        tips.append("Maintain good personal hygiene for confidence in any setting")
+        if climate == "hot":
+            tips.append("Use a refreshing face wash to stay fresh throughout the day")
+        else:
+            tips.append("Keep your skin moisturized to maintain a healthy appearance")
+    
+    if climate == "cold":
+        tips.append("Don't forget lip balm to prevent chapped lips in cold weather")
+    
+    if occasion == "formal":
+        tips.append("A subtle, clean fragrance completes your polished look")
+    elif occasion == "party":
+        tips.append("Choose a signature fragrance that reflects your personality")
+    
+    if clothing_style == "mens" and climate == "hot":
+        tips.append("Use a sweat-resistant face mist to stay fresh in warm weather")
+    
+    return tips[:10]
+
+
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({"status": "running", "message": "Fashion Recommendation API is active"})
@@ -524,7 +621,11 @@ def predict():
     style_tags = [s.strip() for s in style_tags.split(',')] if style_tags else None
     season_preference = request.form.get('season_preference', '')
     season_preference = season_preference if season_preference in ['spring', 'summer', 'fall', 'winter'] else None
-    if occasion not in ['casual', 'formal']:
+    detect_face = request.form.get('detect_face', 'false').lower() == 'true'
+    skin_tone = request.form.get('skin_tone', '')
+    undertone = request.form.get('undertone', '')
+    
+    if occasion not in ['casual', 'formal', 'party', 'ethnic']:
         occasion = 'casual'
     if climate not in ['hot', 'moderate', 'cold']:
         climate = 'moderate'
@@ -545,12 +646,23 @@ def predict():
         outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"], outfit_gender)
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         result_outfits.append(outfit_copy)
+    
+    style_tips = generate_style_tips(
+        clothing_style, 
+        climate, 
+        occasion, 
+        skin_tone if skin_tone else None,
+        undertone if undertone else None,
+        detect_face
+    )
+    
     return jsonify({
         "status": "success",
         "prediction": {
             "confidence": 0.95,
             "clothing_type": "Uploaded Garment",
-            "outfits": result_outfits
+            "outfits": result_outfits,
+            "style_tips": style_tips
         }
     })
 
