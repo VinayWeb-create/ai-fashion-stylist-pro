@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
+
 import os
 from urllib.parse import quote_plus
 import json
 from datetime import datetime
-from bson import ObjectId
+
 import secrets
 
 # Import new modules
@@ -30,20 +30,7 @@ except Exception as e:
 app = Flask(__name__)
 CORS(app)
 
-@app.before_request
-def ensure_db_init():
-    """Ensure database is initialized before any request, but don't block forever"""
-    if MONGODB_ENABLED and not getattr(app, '_db_ready', False):
-        try:
-            # Check connection with a quick ping
-            from pymongo.errors import ServerSelectionTimeoutError
-            from models import client
-            client.admin.command('ping')
-            init_db()
-            app._db_ready = True
-        except Exception as e:
-            app.logger.warning(f"Lazy DB initialization skipped or failed: {e}")
-            # We don't set _db_ready to True so it can retry next time
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 UPLOAD_FOLDER = 'uploads'
@@ -1047,17 +1034,18 @@ def index():
     })
 
 @app.route('/predict', methods=['POST'])
-@optional_token
 def predict():
-    """Generate outfit recommendations (works with or without authentication)"""
     if 'image' not in request.files:
         return jsonify({"status": "error", "message": "No image file provided"}), 400
+
     file = request.files['image']
     if file.filename == '':
         return jsonify({"status": "error", "message": "No file selected"}), 400
+
     if not allowed_file(file.filename):
         return jsonify({"status": "error", "message": "Invalid file type"}), 400
-    
+
+    # Read form values ONLY
     occasion = request.form.get('occasion', 'casual')
     occasion_subtype = request.form.get('occasion_subtype', '')
     climate = request.form.get('climate', 'moderate')
@@ -1068,18 +1056,8 @@ def predict():
     detect_face = request.form.get('detect_face', 'false').lower() == 'true'
     skin_tone = request.form.get('skin_tone', '')
     undertone = request.form.get('undertone', '')
-    
-    # If user is authenticated, use their profile preferences
-    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
-        user = User.find_by_id(request.current_user['user_id'])
-        if user and user.get('profile'):
-            profile = user['profile']
-            body_type = profile.get('body_type', body_type)
-            budget = profile.get('budget_preference', budget)
-            age_group = profile.get('age_group', age_group)
-            skin_tone = profile.get('skin_tone', skin_tone)
-            undertone = profile.get('undertone', undertone)
-    
+
+    # Normalize inputs
     if occasion not in ['casual', 'formal', 'party', 'ethnic']:
         occasion = 'casual'
     if climate not in ['hot', 'moderate', 'cold']:
@@ -1092,49 +1070,40 @@ def predict():
         body_type = 'regular'
     if budget not in ['low', 'medium', 'high']:
         budget = 'medium'
-    
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(filepath)
-    
+
+    # PURE LOGIC (no DB, no disk)
     matching_outfits = rank_and_filter_outfits(
-        occasion, climate, clothing_style, age_group, body_type, budget, 
+        occasion,
+        climate,
+        clothing_style,
+        age_group,
+        body_type,
+        budget,
         occasion_subtype if occasion_subtype else None
     )
-    
+
     result_outfits = []
     for outfit in matching_outfits:
         outfit_copy = outfit.copy()
-        outfit_gender = outfit.get("gender", "unisex")
-        outfit_budget = outfit.get("budget", "medium")
-        outfit_occasion = outfit.get("occasion", "casual")
-        outfit_subtype = occasion_subtype if occasion_subtype in outfit.get("occasion_subtype", []) else None
-        
         outfit_copy["shopping_links"] = generate_shopping_links(
-            outfit["items"], 
-            outfit_gender, 
-            outfit_budget, 
-            outfit_occasion,
-            outfit_subtype
+            outfit["items"],
+            outfit.get("gender", "unisex"),
+            outfit.get("budget", "medium"),
+            outfit.get("occasion", "casual"),
+            occasion_subtype if occasion_subtype in outfit.get("occasion_subtype", []) else None
         )
-        outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
-        
-        # Add wardrobe context if user is authenticated
-        if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
-            outfit_copy["in_wardrobe"] = False  # Can be enhanced to check actual wardrobe
-        
         result_outfits.append(outfit_copy)
-    
+
     style_tips = generate_care_routines(
-        clothing_style, 
-        climate, 
-        occasion, 
+        clothing_style,
+        climate,
+        occasion,
         skin_tone if skin_tone else None,
         undertone if undertone else None,
         detect_face
     )
-    
-    response_data = {
+
+    return jsonify({
         "status": "success",
         "prediction": {
             "confidence": 0.95,
@@ -1142,16 +1111,8 @@ def predict():
             "outfits": result_outfits,
             "style_tips": style_tips
         }
-    }
-    
-    # Add wardrobe insights if user is authenticated
-    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
-        response_data["user_context"] = {
-            "authenticated": True,
-            "has_wardrobe": True
-        }
-    
-    return jsonify(response_data)
+    })
+
 
 if __name__ == '__main__':
     # Use PORT from environment or default to 5000
@@ -1165,3 +1126,4 @@ if __name__ == '__main__':
             print(f"Startup DB initialization warning: {e}")
             
     app.run(debug=True, host='0.0.0.0', port=port)
+
