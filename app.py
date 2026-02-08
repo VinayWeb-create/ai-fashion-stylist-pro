@@ -1,3 +1,4 @@
+from models import connect_to_mongodb, init_db
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -1284,4 +1285,5 @@ if __name__ == '__main__':
             logger.warning(f"⚠️ DB init: {e}")
     
     app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+
 
