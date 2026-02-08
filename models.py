@@ -327,14 +327,3 @@ class WardrobeInsights:
         except Exception as e:
             logger.error(f"❌ Get insights error: {e}")
             raise
-   @app.before_first_request
-def startup_db():
-    app.logger.info("🔌 Connecting to MongoDB...")
-    connected = connect_to_mongodb()
-
-    if connected:
-        init_db()
-        app.logger.info("✅ MongoDB connected and initialized")
-    else:
-        app.logger.error("❌ MongoDB connection failed")
-
