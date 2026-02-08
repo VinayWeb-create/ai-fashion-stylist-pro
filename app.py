@@ -743,6 +743,20 @@ def health_check():
             'message': str(e)
         }), 500
 
+
+@app.before_first_request
+def startup_db():
+    app.logger.info("🔌 Connecting to MongoDB...")
+    connected = connect_to_mongodb()
+
+    if connected:
+        init_db()
+        app.logger.info("✅ MongoDB connected and initialized")
+    else:
+        app.logger.error("❌ MongoDB connection failed")
+
+
+
 # ============================================================================
 # FIXED REGISTRATION ENDPOINT
 # ============================================================================
@@ -1285,6 +1299,7 @@ if __name__ == '__main__':
             logger.warning(f"⚠️ DB init: {e}")
     
     app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+
 
 
 
