@@ -283,6 +283,78 @@ OUTFIT_DATABASE = [
         "season": ["spring", "fall"],
         "description": "Refined neutrals for versatile wear",
         "reasoning": "Neutral tones create sophisticated versatility"
+    },
+    {
+        "id": "outfit_015",
+        "name": "Urban Streetwear",
+        "gender": "mens",
+        "occasion": "casual",
+        "climate": ["hot", "moderate"],
+        "age_group": ["young"],
+        "items": ["Graphic T-Shirt", "Cargo Pants", "High-Top Sneakers"],
+        "colors": ["Black", "Olive"],
+        "accessories": ["Baseball Cap", "Chain Necklace"],
+        "footwear": "High-Top Sneakers",
+        "budget": "medium",
+        "brands": ["Supreme", "Nike", "Carhartt"],
+        "style_tags": ["urban", "streetwear", "edgy"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Bold urban streetwear style",
+        "reasoning": "Modern street fashion with attitude"
+    },
+    {
+        "id": "outfit_016",
+        "name": "Preppy Casual",
+        "gender": "mens",
+        "occasion": "casual",
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "items": ["Sweater Vest", "Chinos", "Boat Shoes"],
+        "colors": ["Navy", "Cream", "Brown"],
+        "accessories": ["Leather Bracelet", "Messenger Bag"],
+        "footwear": "Boat Shoes",
+        "budget": "medium",
+        "brands": ["Ralph Lauren", "Tommy Hilfiger", "Gant"],
+        "style_tags": ["preppy", "classic", "smart-casual"],
+        "season": ["spring", "fall"],
+        "description": "Classic preppy casual style",
+        "reasoning": "Timeless preppy aesthetic with modern touch"
+    },
+    {
+        "id": "outfit_017",
+        "name": "Boho Chic Dress",
+        "gender": "womens",
+        "occasion": "casual",
+        "climate": ["hot", "moderate"],
+        "age_group": ["young", "adult"],
+        "items": ["Maxi Dress", "Wedge Sandals", "Kimono"],
+        "colors": ["Floral Print", "Beige"],
+        "accessories": ["Layered Necklaces", "Floppy Hat"],
+        "footwear": "Wedge Sandals",
+        "budget": "medium",
+        "brands": ["Free People", "Anthropologie", "Urban Outfitters"],
+        "style_tags": ["boho", "feminine", "relaxed"],
+        "season": ["spring", "summer"],
+        "description": "Bohemian chic casual style",
+        "reasoning": "Free-spirited and effortlessly stylish"
+    },
+    {
+        "id": "outfit_018",
+        "name": "Minimalist Formal",
+        "gender": "womens",
+        "occasion": "formal",
+        "climate": ["moderate"],
+        "age_group": ["adult"],
+        "items": ["Black Sheath Dress", "Pointed Pumps", "Structured Bag"],
+        "colors": ["Black", "White"],
+        "accessories": ["Pearl Studs", "Silver Watch"],
+        "footwear": "Pointed Pumps",
+        "budget": "high",
+        "brands": ["COS", "Everlane", "Theory"],
+        "style_tags": ["minimalist", "elegant", "modern"],
+        "season": ["spring", "fall", "winter"],
+        "description": "Clean minimalist formal look",
+        "reasoning": "Sophisticated simplicity makes a statement"
     }
 ]
 
@@ -387,11 +459,37 @@ def filter_outfits(occasion, climate, clothing_style, age_group, color_preferenc
         if clothing_style in ["mens", "womens"] and outfit["gender"] not in [clothing_style, "unisex"]:
             continue
         filtered.append(outfit)
+    
+    if len(filtered) < 3:
+        for outfit in OUTFIT_DATABASE:
+            if outfit in filtered:
+                continue
+            if outfit["occasion"] == occasion:
+                if clothing_style == "mens" and outfit["gender"] == "womens":
+                    continue
+                if clothing_style == "womens" and outfit["gender"] == "mens":
+                    continue
+                if clothing_style in ["mens", "womens"] and outfit["gender"] not in [clothing_style, "unisex"]:
+                    continue
+                filtered.append(outfit)
+                if len(filtered) >= 3:
+                    break
+    
     filtered = filter_by_color_preference(filtered, color_preferences)
     filtered = filter_by_budget(filtered, budget_range)
     filtered = filter_by_brand(filtered, brand_preferences)
     filtered = filter_by_style_tags(filtered, style_tags)
     filtered = filter_by_season(filtered, season_preference)
+    
+    if len(filtered) < 3:
+        for outfit in OUTFIT_DATABASE:
+            if outfit in filtered:
+                continue
+            if outfit["occasion"] == occasion:
+                filtered.append(outfit)
+                if len(filtered) >= 3:
+                    break
+    
     return filtered[:3]
 
 @app.route('/', methods=['GET'])
