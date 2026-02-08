@@ -369,10 +369,15 @@ def get_current_season():
     else:
         return "fall"
 
-def generate_shopping_links(items):
+def generate_shopping_links(items, gender="unisex"):
     links = []
     for item in items:
-        encoded_item = quote_plus(item)
+        qualified_item = item
+        if gender == "womens":
+            qualified_item = f"Women {item}"
+        elif gender == "mens":
+            qualified_item = f"Men {item}"
+        encoded_item = quote_plus(qualified_item)
         links.append({
             "item": item,
             "links": {
@@ -536,7 +541,8 @@ def predict():
     result_outfits = []
     for outfit in matching_outfits:
         outfit_copy = outfit.copy()
-        outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"])
+        outfit_gender = outfit.get("gender", "unisex")
+        outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"], outfit_gender)
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         result_outfits.append(outfit_copy)
     return jsonify({
