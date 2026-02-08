@@ -6,8 +6,15 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from datetime import datetime
 from config import Config
 
-# MongoDB Connection
-client = MongoClient(Config.MONGODB_URI)
+# MongoDB Connection with SSL/TLS settings
+client = MongoClient(
+    Config.MONGODB_URI,
+    tls=True,
+    tlsAllowInvalidCertificates=False,
+    serverSelectionTimeoutMS=2000,
+    connectTimeoutMS=2000,
+    socketTimeoutMS=5000
+)
 db = client[Config.DATABASE_NAME]
 
 # Collections
@@ -15,11 +22,28 @@ users_collection = db['users']
 wardrobe_collection = db['wardrobe']
 insights_collection = db['insights']
 
-# Create indexes
-users_collection.create_index([('email', ASCENDING)], unique=True)
-wardrobe_collection.create_index([('user_id', ASCENDING)])
-wardrobe_collection.create_index([('user_id', ASCENDING), ('category', ASCENDING)])
-insights_collection.create_index([('user_id', ASCENDING)])
+# Database initialization flag
+_db_initialized = False
+
+def init_db():
+    """Initialize database indexes lazily to prevent startup timeouts"""
+    global _db_initialized
+    if _db_initialized:
+        return
+    
+    try:
+        # Create indexes
+        print("Initializing database indexes...")
+        users_collection.create_index([('email', ASCENDING)], unique=True)
+        wardrobe_collection.create_index([('user_id', ASCENDING)])
+        wardrobe_collection.create_index([('user_id', ASCENDING), ('category', ASCENDING)])
+        insights_collection.create_index([('user_id', ASCENDING)])
+        _db_initialized = True
+        print("Database indexes created successfully")
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
+        # We don't raise here to allow the app to boot even if DB is partially unreachable
+        # Pymongo will retry on actual data operations
 
 class User:
     """User model for authentication and profile"""
