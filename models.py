@@ -32,8 +32,11 @@ def connect_to_mongodb():
     
     try:
         # Check config
-        mongodb_uri = getattr(Config, 'MONGODB_URI', None)
-        database_name = getattr(Config, 'DATABASE_NAME', None)
+       import os
+
+      mongodb_uri = os.getenv("MONGODB_URI")
+      database_name = os.getenv("DATABASE_NAME", "ai_fashion")
+
         
         logger.info(f"📝 Config.MONGODB_URI: {mongodb_uri[:60] if mongodb_uri else 'NOT SET'}...")
         logger.info(f"📝 Config.DATABASE_NAME: {database_name}")
@@ -470,3 +473,4 @@ logger.info(f"   users_collection: {type(users_collection).__name__ if users_col
 logger.info(f"   wardrobe_collection: {type(wardrobe_collection).__name__ if wardrobe_collection else 'None'}")
 logger.info(f"   insights_collection: {type(insights_collection).__name__ if insights_collection else 'None'}")
 logger.info("=" * 80)
+
