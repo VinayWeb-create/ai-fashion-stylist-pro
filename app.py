@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeuf.utils import secure_filename
+from werkzeug.utils import secure_filename
 import os
 from urllib.parse import quote_plus
 import json
@@ -301,7 +301,6 @@ def filter_by_budget(outfits, budget_range):
     if not budget_range:
         return outfits
     
-    budget_order = {"low": 1, "medium": 2, "high": 3}
     filtered = []
     
     for outfit in outfits:
