@@ -474,3 +474,4 @@ logger.info(f"   wardrobe_collection: {type(wardrobe_collection).__name__ if war
 logger.info(f"   insights_collection: {type(insights_collection).__name__ if insights_collection else 'None'}")
 logger.info("=" * 80)
 
+
