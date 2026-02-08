@@ -9,11 +9,11 @@ load_dotenv()
 
 class Config:
     # MongoDB Configuration
-    MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
-    DATABASE_NAME = os.getenv('DATABASE_NAME', 'fashion_stylist')
+    MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://avalavinay7:Vinay@fashion.vpiocpj.mongodb.net/?appName=fashion')
+    DATABASE_NAME = os.getenv('DATABASE_NAME', 'fashion')
     
     # JWT Configuration
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'dev-secret-key-change-in-production')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'mmNGqZD2xq-iUwKrHkG8Do_W9m9iv3ACO7zKJO8GCufLYHUbM1si5x_2_AVmPvNq')
     JWT_ALGORITHM = 'HS256'
     JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
     MAGIC_LINK_EXPIRATION_MINUTES = 15
@@ -34,3 +34,4 @@ class Config:
     
     # Guest Mode
     ALLOW_GUEST_MODE = True
+
