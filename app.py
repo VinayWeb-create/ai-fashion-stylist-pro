@@ -37,8 +37,10 @@ OUTFIT_DATABASE = [
         "name": "Classic Casual Denim",
         "gender": "mens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily", "travel"],
         "climate": ["hot", "moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
         "items": ["Blue Denim Jeans", "White Cotton T-Shirt", "Casual Sneakers"],
         "colors": ["Blue", "White"],
         "accessories": ["Sunglasses", "Wristwatch"],
@@ -55,8 +57,10 @@ OUTFIT_DATABASE = [
         "name": "Summer Casual Shorts",
         "gender": "mens",
         "occasion": "casual",
+        "occasion_subtype": ["travel", "daily"],
         "climate": ["hot"],
         "age_group": ["young"],
+        "body_type": ["slim", "regular"],
         "items": ["Khaki Shorts", "Polo Shirt", "Canvas Shoes"],
         "colors": ["Khaki", "Navy Blue"],
         "accessories": ["Cap", "Backpack"],
@@ -73,8 +77,10 @@ OUTFIT_DATABASE = [
         "name": "Business Formal Suit",
         "gender": "mens",
         "occasion": "formal",
+        "occasion_subtype": ["office", "meeting", "interview"],
         "climate": ["moderate", "cold"],
         "age_group": ["adult", "senior"],
+        "body_type": ["regular", "relaxed"],
         "items": ["Navy Blue Suit", "White Dress Shirt", "Black Leather Shoes", "Silk Tie"],
         "colors": ["Navy Blue", "White", "Black"],
         "accessories": ["Leather Belt", "Cufflinks", "Wristwatch"],
@@ -91,8 +97,10 @@ OUTFIT_DATABASE = [
         "name": "Smart Casual Blazer",
         "gender": "mens",
         "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
         "climate": ["moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Grey Blazer", "Chinos", "Oxford Shoes", "Dress Shirt"],
         "colors": ["Grey", "Beige", "Brown"],
         "accessories": ["Leather Watch", "Pocket Square"],
@@ -109,8 +117,10 @@ OUTFIT_DATABASE = [
         "name": "Winter Casual Layers",
         "gender": "mens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["cold"],
         "age_group": ["young", "adult"],
+        "body_type": ["regular", "relaxed"],
         "items": ["Hoodie", "Jeans", "Winter Jacket", "Boots"],
         "colors": ["Black", "Grey", "Brown"],
         "accessories": ["Beanie", "Scarf"],
@@ -127,8 +137,10 @@ OUTFIT_DATABASE = [
         "name": "Casual Floral Dress",
         "gender": "womens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["hot", "moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Floral Midi Dress", "Sandals", "Denim Jacket"],
         "colors": ["Floral Print", "Blue"],
         "accessories": ["Sunglasses", "Crossbody Bag"],
@@ -145,8 +157,10 @@ OUTFIT_DATABASE = [
         "name": "Summer Breezy Outfit",
         "gender": "womens",
         "occasion": "casual",
+        "occasion_subtype": ["travel", "daily"],
         "climate": ["hot"],
         "age_group": ["young"],
+        "body_type": ["slim", "regular"],
         "items": ["White Linen Top", "High Waisted Shorts", "Espadrilles"],
         "colors": ["White", "Denim Blue"],
         "accessories": ["Straw Hat", "Tote Bag"],
@@ -162,9 +176,11 @@ OUTFIT_DATABASE = [
         "id": "outfit_008",
         "name": "Elegant Evening Gown",
         "gender": "womens",
-        "occasion": "formal",
+        "occasion": "party",
+        "occasion_subtype": ["wedding", "night"],
         "climate": ["moderate", "cold"],
         "age_group": ["adult", "senior"],
+        "body_type": ["regular", "relaxed"],
         "items": ["Black Evening Gown", "Heels", "Clutch"],
         "colors": ["Black"],
         "accessories": ["Pearl Necklace", "Bracelet", "Earrings"],
@@ -181,8 +197,10 @@ OUTFIT_DATABASE = [
         "name": "Professional Pantsuit",
         "gender": "womens",
         "occasion": "formal",
+        "occasion_subtype": ["office", "meeting", "interview"],
         "climate": ["moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Blazer", "Dress Pants", "Blouse", "Pumps"],
         "colors": ["Navy", "White"],
         "accessories": ["Statement Watch", "Tote Bag"],
@@ -199,8 +217,10 @@ OUTFIT_DATABASE = [
         "name": "Cozy Winter Layers",
         "gender": "womens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["cold"],
         "age_group": ["young", "adult"],
+        "body_type": ["regular", "relaxed"],
         "items": ["Sweater", "Jeans", "Coat", "Ankle Boots"],
         "colors": ["Burgundy", "Black", "Camel"],
         "accessories": ["Scarf", "Gloves"],
@@ -216,9 +236,11 @@ OUTFIT_DATABASE = [
         "id": "outfit_011",
         "name": "Cocktail Party Dress",
         "gender": "womens",
-        "occasion": "formal",
+        "occasion": "party",
+        "occasion_subtype": ["night", "festival"],
         "climate": ["hot", "moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Cocktail Dress", "Strappy Heels", "Clutch"],
         "colors": ["Red", "Gold"],
         "accessories": ["Drop Earrings", "Bracelet"],
@@ -235,8 +257,10 @@ OUTFIT_DATABASE = [
         "name": "Basic Unisex Casual",
         "gender": "unisex",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["hot", "moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
         "items": ["Plain T-Shirt", "Jeans", "Sneakers"],
         "colors": ["Black", "Blue"],
         "accessories": ["Backpack"],
@@ -253,8 +277,10 @@ OUTFIT_DATABASE = [
         "name": "Athleisure Comfort",
         "gender": "unisex",
         "occasion": "casual",
+        "occasion_subtype": ["college", "travel"],
         "climate": ["hot", "moderate", "cold"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
         "items": ["Joggers", "Hoodie", "Running Shoes"],
         "colors": ["Grey", "Black"],
         "accessories": ["Sports Watch", "Gym Bag"],
@@ -271,8 +297,10 @@ OUTFIT_DATABASE = [
         "name": "Smart Casual Neutrals",
         "gender": "unisex",
         "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
         "climate": ["moderate"],
         "age_group": ["adult"],
+        "body_type": ["regular", "relaxed"],
         "items": ["Blazer", "Trousers", "Loafers", "Button Up Shirt"],
         "colors": ["Beige", "White", "Brown"],
         "accessories": ["Leather Belt", "Watch"],
@@ -289,8 +317,10 @@ OUTFIT_DATABASE = [
         "name": "Urban Streetwear",
         "gender": "mens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["hot", "moderate"],
         "age_group": ["young"],
+        "body_type": ["slim", "regular"],
         "items": ["Graphic T-Shirt", "Cargo Pants", "High-Top Sneakers"],
         "colors": ["Black", "Olive"],
         "accessories": ["Baseball Cap", "Chain Necklace"],
@@ -307,8 +337,10 @@ OUTFIT_DATABASE = [
         "name": "Preppy Casual",
         "gender": "mens",
         "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
         "climate": ["moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Sweater Vest", "Chinos", "Boat Shoes"],
         "colors": ["Navy", "Cream", "Brown"],
         "accessories": ["Leather Bracelet", "Messenger Bag"],
@@ -325,8 +357,10 @@ OUTFIT_DATABASE = [
         "name": "Boho Chic Dress",
         "gender": "womens",
         "occasion": "casual",
+        "occasion_subtype": ["travel", "daily"],
         "climate": ["hot", "moderate"],
         "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
         "items": ["Maxi Dress", "Wedge Sandals", "Kimono"],
         "colors": ["Floral Print", "Beige"],
         "accessories": ["Layered Necklaces", "Floppy Hat"],
@@ -343,8 +377,10 @@ OUTFIT_DATABASE = [
         "name": "Minimalist Formal",
         "gender": "womens",
         "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
         "climate": ["moderate"],
         "age_group": ["adult"],
+        "body_type": ["slim", "regular"],
         "items": ["Black Sheath Dress", "Pointed Pumps", "Structured Bag"],
         "colors": ["Black", "White"],
         "accessories": ["Pearl Studs", "Silver Watch"],
@@ -355,6 +391,46 @@ OUTFIT_DATABASE = [
         "season": ["spring", "fall", "winter"],
         "description": "Clean minimalist formal look",
         "reasoning": "Sophisticated simplicity makes a statement"
+    },
+    {
+        "id": "outfit_019",
+        "name": "Traditional Ethnic Wear",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["traditional", "festive"],
+        "climate": ["hot", "moderate"],
+        "age_group": ["young", "adult", "senior"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Silk Saree", "Blouse", "Traditional Jewelry", "Heels"],
+        "colors": ["Red", "Gold"],
+        "accessories": ["Bangles", "Earrings", "Necklace"],
+        "footwear": "Heels",
+        "budget": "high",
+        "brands": ["FabIndia", "Sabyasachi", "Ritu Kumar"],
+        "style_tags": ["traditional", "elegant", "festive"],
+        "season": ["spring", "summer", "fall", "winter"],
+        "description": "Classic traditional ethnic attire",
+        "reasoning": "Timeless elegance for cultural celebrations"
+    },
+    {
+        "id": "outfit_020",
+        "name": "Festive Kurta Set",
+        "gender": "mens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["traditional", "festive"],
+        "climate": ["hot", "moderate"],
+        "age_group": ["young", "adult", "senior"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Kurta", "Churidar", "Nehru Jacket", "Mojari"],
+        "colors": ["Cream", "Gold"],
+        "accessories": ["Watch", "Pocket Square"],
+        "footwear": "Mojari",
+        "budget": "medium",
+        "brands": ["Manyavar", "FabIndia", "Soch"],
+        "style_tags": ["traditional", "festive", "elegant"],
+        "season": ["spring", "summer", "fall", "winter"],
+        "description": "Traditional festive attire for men",
+        "reasoning": "Perfect blend of tradition and contemporary style"
     }
 ]
 
@@ -369,14 +445,38 @@ def get_current_season():
     else:
         return "fall"
 
-def generate_shopping_links(items, gender="unisex"):
+def generate_shopping_links(items, gender="unisex", budget="medium", occasion="casual", occasion_subtype=None):
     links = []
+    
+    budget_hints = {
+        "low": "under 1000",
+        "medium": "under 2500",
+        "high": "premium"
+    }
+    
+    occasion_contexts = {
+        "casual": {"college": "college", "daily": "daily wear", "travel": "travel"},
+        "formal": {"office": "office", "meeting": "formal", "interview": "interview"},
+        "party": {"night": "party", "wedding": "party wear", "festival": "festive"},
+        "ethnic": {"traditional": "traditional", "festive": "festive"}
+    }
+    
     for item in items:
-        qualified_item = item
+        gender_prefix = ""
         if gender == "womens":
-            qualified_item = f"Women {item}"
+            gender_prefix = "women "
         elif gender == "mens":
-            qualified_item = f"Men {item}"
+            gender_prefix = "men "
+        
+        budget_hint = budget_hints.get(budget, "")
+        
+        occasion_context = ""
+        if occasion_subtype and occasion in occasion_contexts:
+            occasion_context = occasion_contexts[occasion].get(occasion_subtype, "")
+        
+        query_parts = [gender_prefix, occasion_context, item, budget_hint]
+        qualified_item = " ".join([p for p in query_parts if p]).strip()
+        
         encoded_item = quote_plus(qualified_item)
         links.append({
             "item": item,
@@ -388,154 +488,111 @@ def generate_shopping_links(items, gender="unisex"):
         })
     return links
 
-def filter_by_color_preference(outfits, color_preferences):
-    if not color_preferences:
-        return outfits
-    color_prefs_lower = [c.lower() for c in color_preferences]
-    filtered = []
-    for outfit in outfits:
-        outfit_colors_lower = [c.lower() for c in outfit["colors"]]
-        if any(pref in outfit_colors_lower for pref in color_prefs_lower):
-            filtered.append(outfit)
-    return filtered if filtered else outfits
+def calculate_outfit_score(outfit, clothing_style, occasion, occasion_subtype, climate, body_type, budget):
+    score = 0
+    
+    if outfit["gender"] == clothing_style:
+        score += 100
+    elif outfit["gender"] == "unisex":
+        score += 50
+    else:
+        return 0
+    
+    if outfit["occasion"] == occasion:
+        score += 50
+    
+    if occasion_subtype and occasion_subtype in outfit.get("occasion_subtype", []):
+        score += 30
+    
+    if climate in outfit["climate"]:
+        score += 20
+    
+    if body_type in outfit.get("body_type", []):
+        score += 15
+    
+    if outfit["budget"] == budget:
+        score += 10
+    
+    return score
 
-def filter_by_budget(outfits, budget_range):
-    if not budget_range:
-        return outfits
-    filtered = []
-    for outfit in outfits:
-        if outfit["budget"] == budget_range:
-            filtered.append(outfit)
-    return filtered if filtered else outfits
-
-def filter_by_brand(outfits, brand_preferences):
-    if not brand_preferences:
-        return outfits
-    brand_prefs_lower = [b.lower() for b in brand_preferences]
-    filtered = []
-    for outfit in outfits:
-        outfit_brands_lower = [b.lower() for b in outfit["brands"]]
-        if any(pref in outfit_brands_lower for pref in brand_prefs_lower):
-            filtered.append(outfit)
-    return filtered if filtered else outfits
-
-def filter_by_style_tags(outfits, style_tags):
-    if not style_tags:
-        return outfits
-    style_tags_lower = [s.lower() for s in style_tags]
-    filtered = []
-    for outfit in outfits:
-        outfit_tags_lower = [t.lower() for t in outfit["style_tags"]]
-        if any(tag in outfit_tags_lower for tag in style_tags_lower):
-            filtered.append(outfit)
-    return filtered if filtered else outfits
-
-def filter_by_season(outfits, season_preference):
-    if not season_preference:
-        season_preference = get_current_season()
-    filtered = []
-    for outfit in outfits:
-        if season_preference in outfit["season"]:
-            filtered.append(outfit)
-    return filtered if filtered else outfits
-
-def get_outfit_rating(outfit_id):
-    ratings = load_json_file(RATINGS_FILE, {})
-    if outfit_id in ratings:
-        total = sum(ratings[outfit_id])
-        count = len(ratings[outfit_id])
-        return round(total / count, 2) if count > 0 else 0
-    return 0
-
-def filter_outfits(occasion, climate, clothing_style, age_group, color_preferences=None, 
-                   budget_range=None, brand_preferences=None, style_tags=None, season_preference=None):
-    filtered = []
+def rank_and_filter_outfits(occasion, climate, clothing_style, age_group, body_type, budget, occasion_subtype=None):
+    scored_outfits = []
+    
     for outfit in OUTFIT_DATABASE:
-        if outfit["occasion"] != occasion:
-            continue
-        if climate not in outfit["climate"]:
-            continue
         if age_group not in outfit["age_group"]:
             continue
+        
         if clothing_style == "mens" and outfit["gender"] == "womens":
             continue
         if clothing_style == "womens" and outfit["gender"] == "mens":
             continue
-        if clothing_style in ["mens", "womens"] and outfit["gender"] not in [clothing_style, "unisex"]:
-            continue
-        filtered.append(outfit)
+        
+        score = calculate_outfit_score(outfit, clothing_style, occasion, occasion_subtype, climate, body_type, budget)
+        
+        if score > 0:
+            scored_outfits.append((score, outfit))
     
-    if len(filtered) < 3:
-        for outfit in OUTFIT_DATABASE:
-            if outfit in filtered:
-                continue
-            if outfit["occasion"] == occasion:
-                if clothing_style == "mens" and outfit["gender"] == "womens":
-                    continue
-                if clothing_style == "womens" and outfit["gender"] == "mens":
-                    continue
-                if clothing_style in ["mens", "womens"] and outfit["gender"] not in [clothing_style, "unisex"]:
-                    continue
-                filtered.append(outfit)
-                if len(filtered) >= 3:
-                    break
+    scored_outfits.sort(key=lambda x: x[0], reverse=True)
     
-    filtered = filter_by_color_preference(filtered, color_preferences)
-    filtered = filter_by_budget(filtered, budget_range)
-    filtered = filter_by_brand(filtered, brand_preferences)
-    filtered = filter_by_style_tags(filtered, style_tags)
-    filtered = filter_by_season(filtered, season_preference)
-    
-    if len(filtered) < 3:
-        for outfit in OUTFIT_DATABASE:
-            if outfit in filtered:
-                continue
-            if outfit["occasion"] == occasion:
-                filtered.append(outfit)
-                if len(filtered) >= 3:
-                    break
-    
-    return filtered[:3]
+    return [outfit for score, outfit in scored_outfits[:3]]
 
-def generate_style_tips(clothing_style, climate, occasion, skin_tone=None, undertone=None, detect_face=False):
+def generate_care_routines(clothing_style, climate, occasion, skin_tone=None, undertone=None, detect_face=False):
     tips = []
     
-    fashion_tips = {
+    fashion_tips_map = {
         "casual_hot": [
             "Choose breathable fabrics like cotton and linen for maximum comfort",
-            "Light colors reflect heat better than dark ones",
-            "Layer with lightweight pieces for versatile styling"
+            "Light colors reflect heat better and keep you cooler"
         ],
         "casual_moderate": [
-            "Mix textures to add visual interest to your outfit",
-            "Transitional pieces work well in changing weather",
-            "Accessorize to elevate a simple look"
+            "Layer with lightweight pieces for versatile styling",
+            "Mix textures to add visual interest to your outfit"
         ],
         "casual_cold": [
             "Layer strategically with base, mid, and outer layers",
-            "Invest in quality outerwear that complements your wardrobe",
-            "Don't forget warm accessories like scarves and gloves"
+            "Invest in quality outerwear that complements your wardrobe"
         ],
         "formal_hot": [
-            "Opt for lightweight formal fabrics to stay cool",
-            "Choose tailored fits that allow air circulation",
-            "Keep accessories minimal and elegant"
+            "Opt for lightweight formal fabrics to stay cool and professional",
+            "Choose tailored fits that allow air circulation"
         ],
         "formal_moderate": [
             "Classic silhouettes never go out of style",
-            "Ensure proper fit for a polished appearance",
-            "Coordinate colors for a cohesive look"
+            "Ensure proper fit for a polished appearance"
         ],
         "formal_cold": [
             "Wool and wool-blend suits provide warmth and sophistication",
-            "Layer with dress shirts and vests for added warmth",
-            "Choose darker colors for formal winter events"
+            "Layer with dress shirts and vests for added warmth"
+        ],
+        "party_hot": [
+            "Choose statement pieces in breathable fabrics",
+            "Bold accessories elevate your party look"
+        ],
+        "party_moderate": [
+            "Balance comfort with glamour for all-night confidence",
+            "Metallic accents add festive flair"
+        ],
+        "party_cold": [
+            "Layer with elegant wraps or shawls",
+            "Rich fabrics like velvet add luxury"
+        ],
+        "ethnic_hot": [
+            "Choose lightweight traditional fabrics like cotton or linen blends",
+            "Traditional silhouettes in breathable materials work best"
+        ],
+        "ethnic_moderate": [
+            "Silk and cotton blends offer comfort and elegance",
+            "Traditional jewelry completes the ethnic look"
+        ],
+        "ethnic_cold": [
+            "Layer with traditional shawls or dupattas",
+            "Rich fabrics like silk and brocade add warmth"
         ]
     }
     
     key = f"{occasion}_{climate}"
-    if key in fashion_tips:
-        tips.extend(fashion_tips[key][:2])
+    if key in fashion_tips_map:
+        tips.extend(fashion_tips_map[key])
     
     if clothing_style == "mens":
         tips.append("Keep your look sharp with well-fitted clothing")
@@ -544,55 +601,60 @@ def generate_style_tips(clothing_style, climate, occasion, skin_tone=None, under
     
     if detect_face and skin_tone:
         if skin_tone in ["fair", "light"]:
-            tips.append("Use a gentle, hydrating face wash suitable for sensitive skin")
-            tips.append("Apply SPF 50 sunscreen daily to protect fair skin from UV damage")
+            tips.append("Morning: Use a gentle, hydrating face wash suitable for sensitive skin")
+            tips.append("Before outing: Apply SPF 50 sunscreen to protect fair skin from UV damage")
             if climate == "cold":
-                tips.append("Use a rich cream moisturizer to combat dryness in cold weather")
+                tips.append("Night care: Use a rich cream moisturizer to combat dryness")
             else:
-                tips.append("A lightweight hydrating moisturizer keeps skin balanced")
+                tips.append("Daily: A lightweight hydrating moisturizer keeps skin balanced")
         elif skin_tone in ["wheatish", "medium"]:
-            tips.append("A gel-based face wash helps maintain your skin's natural balance")
-            tips.append("SPF 30+ sunscreen is essential for daily protection")
+            tips.append("Morning: A gel-based face wash helps maintain your skin's natural balance")
+            tips.append("Before outing: SPF 30+ sunscreen is essential for daily protection")
             if climate == "hot":
-                tips.append("Use an oil-free moisturizer to prevent excess shine in humid weather")
+                tips.append("Daily: Use an oil-free moisturizer to prevent excess shine")
             else:
-                tips.append("A lightweight moisturizer provides hydration without heaviness")
+                tips.append("Daily: A lightweight moisturizer provides hydration without heaviness")
         elif skin_tone in ["dusky", "deep"]:
-            tips.append("Use a cream-based cleanser to nourish and cleanse deeply")
-            tips.append("SPF 30 sunscreen helps protect against sun damage and hyperpigmentation")
-            tips.append("A nourishing moisturizer keeps your skin healthy and glowing")
+            tips.append("Morning: Use a cream-based cleanser to nourish and cleanse deeply")
+            tips.append("Before outing: SPF 30 sunscreen helps protect against sun damage")
+            tips.append("Daily: A nourishing moisturizer keeps your skin healthy and glowing")
         
-        if undertone == "warm":
-            if clothing_style == "womens":
-                tips.append("Warm-toned makeup bases complement your natural undertone beautifully")
-        elif undertone == "cool":
-            if clothing_style == "womens":
-                tips.append("Cool or neutral makeup bases enhance your natural complexion")
+        if undertone == "warm" and clothing_style == "womens":
+            tips.append("Warm-toned makeup bases complement your natural undertone beautifully")
+        elif undertone == "cool" and clothing_style == "womens":
+            tips.append("Cool or neutral makeup bases enhance your natural complexion")
         
         if clothing_style == "mens":
-            tips.append("Keep facial hair well-groomed with regular trimming and beard oil")
+            tips.append("Grooming: Keep facial hair well-groomed with regular trimming and beard oil")
         elif clothing_style == "womens":
-            tips.append("Choose lip and blush shades that harmonize with your outfit colors")
+            tips.append("Makeup: Choose lip and blush shades that harmonize with your outfit colors")
     else:
         tips.append("Maintain good personal hygiene for confidence in any setting")
         if climate == "hot":
-            tips.append("Use a refreshing face wash to stay fresh throughout the day")
+            tips.append("Morning: Use a refreshing face wash to stay fresh throughout the day")
         else:
-            tips.append("Keep your skin moisturized to maintain a healthy appearance")
+            tips.append("Daily: Keep your skin moisturized to maintain a healthy appearance")
     
     if climate == "cold":
-        tips.append("Don't forget lip balm to prevent chapped lips in cold weather")
+        tips.append("Night care: Don't forget lip balm to prevent chapped lips in cold weather")
     
     if occasion == "formal":
-        tips.append("A subtle, clean fragrance completes your polished look")
+        tips.append("Before outing: A subtle, clean fragrance completes your polished look")
     elif occasion == "party":
-        tips.append("Choose a signature fragrance that reflects your personality")
+        tips.append("Before outing: Choose a signature fragrance that reflects your personality")
     
     if clothing_style == "mens" and climate == "hot":
-        tips.append("Use a sweat-resistant face mist to stay fresh in warm weather")
+        tips.append("During day: Use a sweat-resistant face mist to stay fresh")
     
     return tips[:10]
 
+def get_outfit_rating(outfit_id):
+    ratings = load_json_file(RATINGS_FILE, {})
+    if outfit_id in ratings:
+        total = sum(ratings[outfit_id])
+        count = len(ratings[outfit_id])
+        return round(total / count, 2) if count > 0 else 0
+    return 0
 
 @app.route('/', methods=['GET'])
 def index():
@@ -607,20 +669,14 @@ def predict():
         return jsonify({"status": "error", "message": "No file selected"}), 400
     if not allowed_file(file.filename):
         return jsonify({"status": "error", "message": "Invalid file type"}), 400
+    
     occasion = request.form.get('occasion', 'casual')
+    occasion_subtype = request.form.get('occasion_subtype', '')
     climate = request.form.get('climate', 'moderate')
     clothing_style = request.form.get('clothing_style', 'unisex')
     age_group = request.form.get('age_group', 'young')
-    color_preferences = request.form.get('color_preferences', '')
-    color_preferences = [c.strip() for c in color_preferences.split(',')] if color_preferences else None
-    budget_range = request.form.get('budget_range', '')
-    budget_range = budget_range if budget_range in ['low', 'medium', 'high'] else None
-    brand_preferences = request.form.get('brand_preferences', '')
-    brand_preferences = [b.strip() for b in brand_preferences.split(',')] if brand_preferences else None
-    style_tags = request.form.get('style_tags', '')
-    style_tags = [s.strip() for s in style_tags.split(',')] if style_tags else None
-    season_preference = request.form.get('season_preference', '')
-    season_preference = season_preference if season_preference in ['spring', 'summer', 'fall', 'winter'] else None
+    body_type = request.form.get('body_type', 'regular')
+    budget = request.form.get('budget', 'medium')
     detect_face = request.form.get('detect_face', 'false').lower() == 'true'
     skin_tone = request.form.get('skin_tone', '')
     undertone = request.form.get('undertone', '')
@@ -633,21 +689,39 @@ def predict():
         clothing_style = 'unisex'
     if age_group not in ['young', 'adult', 'senior']:
         age_group = 'young'
+    if body_type not in ['slim', 'regular', 'relaxed']:
+        body_type = 'regular'
+    if budget not in ['low', 'medium', 'high']:
+        budget = 'medium'
+    
     filename = secure_filename(file.filename)
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
-    matching_outfits = filter_outfits(occasion, climate, clothing_style, age_group,
-                                     color_preferences, budget_range, brand_preferences,
-                                     style_tags, season_preference)
+    
+    matching_outfits = rank_and_filter_outfits(
+        occasion, climate, clothing_style, age_group, body_type, budget, 
+        occasion_subtype if occasion_subtype else None
+    )
+    
     result_outfits = []
     for outfit in matching_outfits:
         outfit_copy = outfit.copy()
         outfit_gender = outfit.get("gender", "unisex")
-        outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"], outfit_gender)
+        outfit_budget = outfit.get("budget", "medium")
+        outfit_occasion = outfit.get("occasion", "casual")
+        outfit_subtype = occasion_subtype if occasion_subtype in outfit.get("occasion_subtype", []) else None
+        
+        outfit_copy["shopping_links"] = generate_shopping_links(
+            outfit["items"], 
+            outfit_gender, 
+            outfit_budget, 
+            outfit_occasion,
+            outfit_subtype
+        )
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         result_outfits.append(outfit_copy)
     
-    style_tips = generate_style_tips(
+    style_tips = generate_care_routines(
         clothing_style, 
         climate, 
         occasion, 
