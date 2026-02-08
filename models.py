@@ -35,7 +35,7 @@ def connect_to_mongodb():
     
     try:
         # Get from environment directly (not Config)
-        mongodb_uri = os.getenv('MONGODB_URI')
+        mongodb_uri = os.getenv('MONGODB_URI','mongodb+srv://avalavinay7:Vinay@fashion.vpiocpj.mongodb.net/?appName=fashion')
         database_name = os.getenv('DATABASE_NAME', 'fashion')
         
         logger.info(f"📝 MONGODB_URI (first 70 chars): {mongodb_uri[:70] if mongodb_uri else 'NOT FOUND'}")
@@ -327,3 +327,4 @@ class WardrobeInsights:
         except Exception as e:
             logger.error(f"❌ Get insights error: {e}")
             raise
+
