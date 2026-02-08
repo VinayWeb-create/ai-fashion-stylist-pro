@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import json
 from datetime import datetime
 from bson import ObjectId
+import secrets
 
 # Import new modules
 try:
@@ -14,15 +15,29 @@ try:
         verify_jwt_token, generate_magic_link_token, verify_magic_link_token,
         send_magic_link_email, token_required, optional_token
     )
-    from models import User, WardrobeItem, WardrobeInsights
+    from models import User, WardrobeItem, WardrobeInsights, init_db
     from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
     MONGODB_ENABLED = True
 except Exception as e:
     print(f"MongoDB features disabled: {e}")
     MONGODB_ENABLED = False
+    # Create dummy decorators when MongoDB is disabled
+    def token_required(f):
+        return f
+    def optional_token(f):
+        return f
 
 app = Flask(__name__)
 CORS(app)
+
+@app.before_request
+def ensure_db_init():
+    """Ensure database is initialized before any request"""
+    if MONGODB_ENABLED:
+        try:
+            init_db()
+        except Exception as e:
+            app.logger.warning(f"Lazy DB initialization failed: {e}")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 UPLOAD_FOLDER = 'uploads'
@@ -1133,4 +1148,9 @@ def predict():
     return jsonify(response_data)
 
 if __name__ == '__main__':
+    if MONGODB_ENABLED:
+        try:
+            init_db()
+        except Exception as e:
+            print(f"Startup DB initialization failed: {e}")
     app.run(debug=True, host='0.0.0.0', port=5000)
