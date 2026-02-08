@@ -32,12 +32,18 @@ CORS(app)
 
 @app.before_request
 def ensure_db_init():
-    """Ensure database is initialized before any request"""
-    if MONGODB_ENABLED:
+    """Ensure database is initialized before any request, but don't block forever"""
+    if MONGODB_ENABLED and not getattr(app, '_db_ready', False):
         try:
+            # Check connection with a quick ping
+            from pymongo.errors import ServerSelectionTimeoutError
+            from models import client
+            client.admin.command('ping')
             init_db()
+            app._db_ready = True
         except Exception as e:
-            app.logger.warning(f"Lazy DB initialization failed: {e}")
+            app.logger.warning(f"Lazy DB initialization skipped or failed: {e}")
+            # We don't set _db_ready to True so it can retry next time
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 UPLOAD_FOLDER = 'uploads'
@@ -1148,9 +1154,14 @@ def predict():
     return jsonify(response_data)
 
 if __name__ == '__main__':
+    # Use PORT from environment or default to 5000
+    port = int(os.environ.get("PORT", 5000))
+    
     if MONGODB_ENABLED:
         try:
+            # Attempt a quick init but don't crash if DB is down at startup
             init_db()
         except Exception as e:
-            print(f"Startup DB initialization failed: {e}")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+            print(f"Startup DB initialization warning: {e}")
+            
+    app.run(debug=True, host='0.0.0.0', port=port)
