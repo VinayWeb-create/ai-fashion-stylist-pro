@@ -5,6 +5,21 @@ import os
 from urllib.parse import quote_plus
 import json
 from datetime import datetime
+from bson import ObjectId
+
+# Import new modules
+try:
+    from auth import (
+        hash_password, verify_password, generate_jwt_token, 
+        verify_jwt_token, generate_magic_link_token, verify_magic_link_token,
+        send_magic_link_email, token_required, optional_token
+    )
+    from models import User, WardrobeItem, WardrobeInsights
+    from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
+    MONGODB_ENABLED = True
+except Exception as e:
+    print(f"MongoDB features disabled: {e}")
+    MONGODB_ENABLED = False
 
 app = Flask(__name__)
 CORS(app)
@@ -656,12 +671,364 @@ def get_outfit_rating(outfit_id):
         return round(total / count, 2) if count > 0 else 0
     return 0
 
+# ============================================================================
+# AUTHENTICATION ENDPOINTS
+# ============================================================================
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    """Register a new user"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    profile = data.get('profile', {})
+    
+    if not email or not password:
+        return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
+    
+    # Check if user already exists
+    existing_user = User.find_by_email(email)
+    if existing_user:
+        return jsonify({'status': 'error', 'message': 'User already exists'}), 400
+    
+    # Create user
+    password_hash = hash_password(password)
+    user = User.create(email, password_hash, profile)
+    
+    # Generate JWT token
+    token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'User registered successfully',
+        'token': token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    }), 201
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    """Login with email and password"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
+        return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
+    
+    # Find user
+    user = User.find_by_email(email)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
+    
+    # Verify password
+    if not verify_password(password, user['password_hash']):
+        return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
+    
+    # Generate JWT token
+    token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Login successful',
+        'token': token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
+
+@app.route('/auth/magic-link', methods=['POST'])
+def request_magic_link():
+    """Request a magic link for passwordless login"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'status': 'error', 'message': 'Email is required'}), 400
+    
+    # Check if user exists, if not create a new user
+    user = User.find_by_email(email)
+    if not user:
+        # Auto-create user for magic link
+        password_hash = hash_password(secrets.token_urlsafe(32))  # Random password
+        user = User.create(email, password_hash)
+    
+    # Generate magic link token
+    token = generate_magic_link_token(email)
+    
+    # Send email
+    send_magic_link_email(email, token)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Magic link sent to your email',
+        'dev_token': token if not os.getenv('SMTP_USER') else None  # Only in dev mode
+    })
+
+@app.route('/auth/verify-magic', methods=['POST'])
+def verify_magic():
+    """Verify magic link token and log in"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    token = data.get('token', '')
+    
+    if not token:
+        return jsonify({'status': 'error', 'message': 'Token is required'}), 400
+    
+    # Verify token
+    email = verify_magic_link_token(token)
+    if not email:
+        return jsonify({'status': 'error', 'message': 'Invalid or expired token'}), 401
+    
+    # Find user
+    user = User.find_by_email(email)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    # Generate JWT token
+    jwt_token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Login successful',
+        'token': jwt_token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
+
+@app.route('/auth/me', methods=['GET'])
+@token_required
+def get_current_user():
+    """Get current user info"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    user = User.find_by_id(request.current_user['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    return jsonify({
+        'status': 'success',
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
+
+@app.route('/auth/profile', methods=['PUT'])
+@token_required
+def update_profile():
+    """Update user profile"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    profile = data.get('profile', {})
+    
+    user = User.update_profile(request.current_user['user_id'], profile)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Profile updated successfully',
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
+
+# ============================================================================
+# WARDROBE ENDPOINTS
+# ============================================================================
+
+@app.route('/wardrobe/items', methods=['GET'])
+@token_required
+def get_wardrobe_items():
+    """Get all wardrobe items for the current user"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    category = request.args.get('category')
+    owned = request.args.get('owned')
+    occasion = request.args.get('occasion')
+    
+    filters = {}
+    if category:
+        filters['category'] = category
+    if owned is not None:
+        filters['owned'] = owned.lower() == 'true'
+    if occasion:
+        filters['occasion'] = occasion
+    
+    items = WardrobeItem.get_user_wardrobe(request.current_user['user_id'], filters)
+    
+    # Convert ObjectId to string
+    for item in items:
+        item['_id'] = str(item['_id'])
+        item['user_id'] = str(item['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'items': items,
+        'count': len(items)
+    })
+
+@app.route('/wardrobe/add', methods=['POST'])
+@token_required
+def add_wardrobe_item():
+    """Add an item to the wardrobe"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    
+    item = WardrobeItem.create(request.current_user['user_id'], data)
+    
+    item['_id'] = str(item['_id'])
+    item['user_id'] = str(item['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Item added to wardrobe',
+        'item': item
+    }), 201
+
+@app.route('/wardrobe/mark-owned/<item_id>', methods=['PUT'])
+@token_required
+def mark_item_owned(item_id):
+    """Mark an item as owned or not owned"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    owned = data.get('owned', True)
+    
+    WardrobeItem.mark_owned(item_id, owned)
+    
+    return jsonify({
+        'status': 'success',
+        'message': f'Item marked as {"owned" if owned else "not owned"}'
+    })
+
+@app.route('/wardrobe/remove/<item_id>', methods=['DELETE'])
+@token_required
+def remove_wardrobe_item(item_id):
+    """Remove an item from the wardrobe"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    WardrobeItem.remove_item(item_id, request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Item removed from wardrobe'
+    })
+
+@app.route('/wardrobe/stats', methods=['GET'])
+@token_required
+def get_wardrobe_stats():
+    """Get wardrobe statistics"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    stats = WardrobeItem.get_wardrobe_stats(request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'stats': stats
+    })
+
+# ============================================================================
+# INSIGHTS ENDPOINTS (KILLER FEATURE)
+# ============================================================================
+
+@app.route('/insights/gaps', methods=['GET'])
+@token_required
+def get_wardrobe_gaps():
+    """Get wardrobe gap analysis - KILLER FEATURE"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    user = User.find_by_id(request.current_user['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    # Analyze gaps
+    gaps = analyze_wardrobe_gaps(request.current_user['user_id'], user['profile'])
+    
+    # Add shopping links to each gap
+    for gap in gaps:
+        query = gap.get('shopping_query', gap.get('item_name', ''))
+        encoded_query = quote_plus(query)
+        gap['shopping_links'] = {
+            'amazon': f"https://www.amazon.in/s?k={encoded_query}",
+            'flipkart': f"https://www.flipkart.com/search?q={encoded_query}",
+            'meesho': f"https://www.meesho.com/search?q={encoded_query}",
+            'myntra': f"https://www.myntra.com/{encoded_query}"
+        }
+    
+    return jsonify({
+        'status': 'success',
+        'gaps': gaps,
+        'count': len(gaps)
+    })
+
+@app.route('/insights/balance', methods=['GET'])
+@token_required
+def get_wardrobe_balance():
+    """Get wardrobe balance metrics"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    balance = calculate_wardrobe_balance(request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'balance': balance
+    })
+
+# ============================================================================
+# EXISTING ENDPOINTS (Enhanced with user context)
+# ============================================================================
+
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({"status": "running", "message": "Fashion Recommendation API is active"})
+    return jsonify({
+        "status": "running", 
+        "message": "Fashion Recommendation API is active",
+        "version": "2.0",
+        "features": {
+            "guest_mode": True,
+            "user_accounts": MONGODB_ENABLED,
+            "digital_wardrobe": MONGODB_ENABLED,
+            "wardrobe_intelligence": MONGODB_ENABLED
+        }
+    })
 
 @app.route('/predict', methods=['POST'])
+@optional_token
 def predict():
+    """Generate outfit recommendations (works with or without authentication)"""
     if 'image' not in request.files:
         return jsonify({"status": "error", "message": "No image file provided"}), 400
     file = request.files['image']
@@ -680,6 +1047,17 @@ def predict():
     detect_face = request.form.get('detect_face', 'false').lower() == 'true'
     skin_tone = request.form.get('skin_tone', '')
     undertone = request.form.get('undertone', '')
+    
+    # If user is authenticated, use their profile preferences
+    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+        user = User.find_by_id(request.current_user['user_id'])
+        if user and user.get('profile'):
+            profile = user['profile']
+            body_type = profile.get('body_type', body_type)
+            budget = profile.get('budget_preference', budget)
+            age_group = profile.get('age_group', age_group)
+            skin_tone = profile.get('skin_tone', skin_tone)
+            undertone = profile.get('undertone', undertone)
     
     if occasion not in ['casual', 'formal', 'party', 'ethnic']:
         occasion = 'casual'
@@ -719,6 +1097,11 @@ def predict():
             outfit_subtype
         )
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
+        
+        # Add wardrobe context if user is authenticated
+        if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+            outfit_copy["in_wardrobe"] = False  # Can be enhanced to check actual wardrobe
+        
         result_outfits.append(outfit_copy)
     
     style_tips = generate_care_routines(
@@ -730,7 +1113,7 @@ def predict():
         detect_face
     )
     
-    return jsonify({
+    response_data = {
         "status": "success",
         "prediction": {
             "confidence": 0.95,
@@ -738,7 +1121,16 @@ def predict():
             "outfits": result_outfits,
             "style_tips": style_tips
         }
-    })
+    }
+    
+    # Add wardrobe insights if user is authenticated
+    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+        response_data["user_context"] = {
+            "authenticated": True,
+            "has_wardrobe": True
+        }
+    
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
