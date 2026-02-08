@@ -743,7 +743,7 @@ def health_check():
         }), 500
 
 # ============================================================================
-# AUTHENTICATION ENDPOINTS - FIXED
+# FIXED REGISTRATION ENDPOINT
 # ============================================================================
 
 @app.route('/auth/register', methods=['POST', 'OPTIONS'])
@@ -757,15 +757,7 @@ def register():
         logger.info("REGISTER REQUEST")
         logger.info("=" * 80)
         
-        # Check MongoDB
-        if not MONGODB_ENABLED:
-            logger.error("MongoDB not enabled")
-            return jsonify({
-                'status': 'error',
-                'message': 'Database not configured. User accounts unavailable.'
-            }), 503
-        
-        # Validate JSON
+        # Step 1: Check if request is JSON
         if not request.is_json:
             logger.error(f"Not JSON. Content-Type: {request.content_type}")
             return jsonify({
@@ -773,8 +765,10 @@ def register():
                 'message': 'Content-Type must be application/json'
             }), 400
         
+        # Step 2: Get request data
         data = request.get_json()
         if not data:
+            logger.error("Empty request body")
             return jsonify({
                 'status': 'error',
                 'message': 'Empty request body'
@@ -784,75 +778,92 @@ def register():
         password = data.get('password', '')
         profile = data.get('profile', {})
         
-        logger.info(f"Register: email={email}")
+        logger.info(f"Email: {email}")
+        logger.info(f"Has password: {bool(password)}")
         
-        # Validate
+        # Step 3: Validate input
         if not email or '@' not in email:
+            logger.warning(f"Invalid email: {email}")
             return jsonify({
                 'status': 'error',
                 'message': 'Valid email is required'
             }), 400
         
         if not password or len(password) < 6:
+            logger.warning(f"Invalid password (len: {len(password)})")
             return jsonify({
                 'status': 'error',
                 'message': 'Password must be at least 6 characters'
             }), 400
         
-        # Check existing user
-        logger.info(f"Checking if {email} exists...")
+        # Step 4: Check MongoDB is enabled
+        if not MONGODB_ENABLED:
+            logger.error("MongoDB is not enabled!")
+            return jsonify({
+                'status': 'error',
+                'message': 'Database not configured. User accounts unavailable.'
+            }), 503
+        
+        # Step 5: Check if user exists
+        logger.info(f"Checking if user exists...")
         try:
-            existing = User.find_by_email(email)
-            if existing:
+            existing_user = User.find_by_email(email)
+            if existing_user:
                 logger.warning(f"User already exists: {email}")
                 return jsonify({
                     'status': 'error',
                     'message': 'Email already registered'
                 }), 400
+            logger.info("User does not exist - proceeding with registration")
         except Exception as e:
-            logger.error(f"DB error checking user: {e}")
+            logger.error(f"Database error checking user: {str(e)}")
+            logger.error(traceback.format_exc())
             return jsonify({
                 'status': 'error',
                 'message': f'Database error: {str(e)}'
-            }), 500
+            }), 503
         
-        # Hash password
+        # Step 6: Hash password
         logger.info("Hashing password...")
         try:
             password_hash = hash_password(password)
-            logger.info("Password hashed")
+            logger.info("Password hashed successfully")
         except Exception as e:
-            logger.error(f"Hashing error: {e}")
+            logger.error(f"Password hashing error: {str(e)}")
             return jsonify({
                 'status': 'error',
                 'message': 'Password processing failed'
             }), 500
         
-        # Create user
-        logger.info("Creating user...")
+        # Step 7: Create user in database
+        logger.info("Creating user in database...")
         try:
             user = User.create(email, password_hash, profile)
-            logger.info(f"User created: {user.get('_id')}")
+            logger.info(f"User created successfully. ID: {user.get('_id')}")
         except Exception as e:
-            logger.error(f"Create error: {e}")
+            logger.error(f"User creation error: {str(e)}")
+            logger.error(traceback.format_exc())
             return jsonify({
                 'status': 'error',
-                'message': f'Registration failed: {str(e)}'
-            }), 500
+                'message': f'User creation failed: {str(e)}'
+            }), 503
         
-        # Generate token
-        logger.info("Generating token...")
+        # Step 8: Generate JWT token
+        logger.info("Generating JWT token...")
         try:
             token = generate_jwt_token(str(user['_id']), email)
-            logger.info("Token generated")
+            logger.info("JWT token generated")
         except Exception as e:
-            logger.error(f"Token error: {e}")
+            logger.error(f"Token generation error: {str(e)}")
             return jsonify({
                 'status': 'error',
                 'message': 'Token generation failed'
             }), 500
         
+        # Step 9: Return success response
         logger.info("✅ REGISTRATION SUCCESSFUL")
+        logger.info("=" * 80)
+        
         return jsonify({
             'status': 'success',
             'message': 'User registered successfully',
@@ -865,11 +876,17 @@ def register():
         }), 201
     
     except Exception as e:
-        logger.error(f"UNEXPECTED ERROR: {e}\n{traceback.format_exc()}")
+        logger.error("=" * 80)
+        logger.error(f"❌ UNEXPECTED ERROR: {str(e)}")
+        logger.error(f"Type: {type(e).__name__}")
+        logger.error(traceback.format_exc())
+        logger.error("=" * 80)
+        
         return jsonify({
             'status': 'error',
-            'message': 'Server error'
+            'message': 'Server error during registration'
         }), 500
+
 
 @app.route('/auth/login', methods=['POST', 'OPTIONS'])
 def login():
@@ -882,13 +899,8 @@ def login():
         logger.info("LOGIN REQUEST")
         logger.info("=" * 80)
         
-        if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Database not configured'
-            }), 503
-        
         if not request.is_json:
+            logger.error(f"Not JSON. Content-Type: {request.content_type}")
             return jsonify({
                 'status': 'error',
                 'message': 'Content-Type must be application/json'
@@ -898,15 +910,24 @@ def login():
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         
-        logger.info(f"Login: email={email}")
+        logger.info(f"Login attempt: {email}")
         
         if not email or not password:
+            logger.warning("Missing email or password")
             return jsonify({
                 'status': 'error',
                 'message': 'Email and password required'
             }), 400
         
+        if not MONGODB_ENABLED:
+            logger.error("MongoDB is not enabled")
+            return jsonify({
+                'status': 'error',
+                'message': 'Database not configured'
+            }), 503
+        
         # Find user
+        logger.info(f"Finding user: {email}")
         try:
             user = User.find_by_email(email)
             if not user:
@@ -915,14 +936,17 @@ def login():
                     'status': 'error',
                     'message': 'Invalid credentials'
                 }), 401
+            logger.info("User found")
         except Exception as e:
-            logger.error(f"DB error: {e}")
+            logger.error(f"Database error finding user: {str(e)}")
+            logger.error(traceback.format_exc())
             return jsonify({
                 'status': 'error',
                 'message': f'Database error: {str(e)}'
-            }), 500
+            }), 503
         
         # Verify password
+        logger.info("Verifying password...")
         try:
             if not verify_password(password, user.get('password_hash')):
                 logger.warning(f"Invalid password for: {email}")
@@ -930,24 +954,29 @@ def login():
                     'status': 'error',
                     'message': 'Invalid credentials'
                 }), 401
+            logger.info("Password verified")
         except Exception as e:
-            logger.error(f"Password verify error: {e}")
+            logger.error(f"Password verification error: {str(e)}")
             return jsonify({
                 'status': 'error',
                 'message': 'Password verification failed'
             }), 500
         
         # Generate token
+        logger.info("Generating token...")
         try:
             token = generate_jwt_token(str(user['_id']), email)
+            logger.info("Token generated")
         except Exception as e:
-            logger.error(f"Token error: {e}")
+            logger.error(f"Token generation error: {str(e)}")
             return jsonify({
                 'status': 'error',
                 'message': 'Token generation failed'
             }), 500
         
         logger.info("✅ LOGIN SUCCESSFUL")
+        logger.info("=" * 80)
+        
         return jsonify({
             'status': 'success',
             'message': 'Login successful',
@@ -960,10 +989,14 @@ def login():
         }), 200
     
     except Exception as e:
-        logger.error(f"UNEXPECTED ERROR: {e}\n{traceback.format_exc()}")
+        logger.error("=" * 80)
+        logger.error(f"❌ UNEXPECTED ERROR: {str(e)}")
+        logger.error(traceback.format_exc())
+        logger.error("=" * 80)
+        
         return jsonify({
             'status': 'error',
-            'message': 'Server error'
+            'message': 'Server error during login'
         }), 500
 
 @app.route('/auth/me', methods=['GET'])
@@ -1251,3 +1284,4 @@ if __name__ == '__main__':
             logger.warning(f"⚠️ DB init: {e}")
     
     app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+
