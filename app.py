@@ -66,6 +66,25 @@ except Exception as e:
 # ============================================================================
 
 app = Flask(__name__)
+_db_started = False
+
+@app.before_request
+def startup_db_once():
+    global _db_started
+
+    if _db_started:
+        return
+
+    app.logger.info("🔌 Connecting to MongoDB...")
+    connected = connect_to_mongodb()
+
+    if connected:
+        init_db()
+        app.logger.info("✅ MongoDB connected and initialized")
+        _db_started = True
+    else:
+        app.logger.error("❌ MongoDB connection failed")
+
 app.config['JSON_SORT_KEYS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
 
@@ -744,16 +763,7 @@ def health_check():
         }), 500
 
 
-@app.before_first_request
-def startup_db():
-    app.logger.info("🔌 Connecting to MongoDB...")
-    connected = connect_to_mongodb()
 
-    if connected:
-        init_db()
-        app.logger.info("✅ MongoDB connected and initialized")
-    else:
-        app.logger.error("❌ MongoDB connection failed")
 
 
 
@@ -1299,6 +1309,7 @@ if __name__ == '__main__':
             logger.warning(f"⚠️ DB init: {e}")
     
     app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+
 
 
 
