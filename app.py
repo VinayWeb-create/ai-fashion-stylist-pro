@@ -7,44 +7,77 @@ from datetime import datetime
 import secrets
 import logging
 import traceback
+import sys
 
-# Setup logging
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+    ]
 )
 logger = logging.getLogger(__name__)
 
-# Import authentication and database modules
+logger.info("=" * 80)
+logger.info("STARTING FASHION STYLIST API v2.3")
+logger.info("=" * 80)
+
+# ============================================================================
+# IMPORT MODULES
+# ============================================================================
+
+MONGODB_ENABLED = False
+
 try:
+    logger.info("📦 Importing auth module...")
     from auth import (
         hash_password, verify_password, generate_jwt_token, 
         verify_jwt_token, generate_magic_link_token, verify_magic_link_token,
         send_magic_link_email, token_required, optional_token
     )
-    from models import User, WardrobeItem, WardrobeInsights, init_db
-    from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
-    MONGODB_ENABLED = True
-    logger.info("✅ MongoDB modules imported successfully")
+    logger.info("✅ Auth module imported")
 except Exception as e:
-    logger.error(f"❌ MongoDB features disabled: {e}")
+    logger.error(f"❌ Auth import failed: {e}")
+    sys.exit(1)
+
+try:
+    logger.info("📦 Importing models module...")
+    from models import User, WardrobeItem, WardrobeInsights, init_db
+    logger.info("✅ Models module imported")
+    MONGODB_ENABLED = True
+except Exception as e:
+    logger.error(f"❌ Models import failed: {e}")
     MONGODB_ENABLED = False
-    # Create dummy decorators when MongoDB is disabled
-    def token_required(f):
-        return f
-    def optional_token(f):
-        return f
+
+try:
+    logger.info("📦 Importing wardrobe_intelligence module...")
+    from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
+    logger.info("✅ Wardrobe intelligence module imported")
+except Exception as e:
+    logger.error(f"❌ Wardrobe intelligence import failed: {e}")
+
+# ============================================================================
+# FLASK APP SETUP
+# ============================================================================
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
+
 CORS(app, resources={
-    r"/auth/*": {"origins": "*"},
-    r"/wardrobe/*": {"origins": "*"},
-    r"/insights/*": {"origins": "*"},
-    r"/predict": {"origins": "*"},
-    r"/": {"origins": "*"}
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
 })
 
-app.config['JSON_SORT_KEYS'] = False
+logger.info(f"✅ Flask app created")
+logger.info(f"✅ MongoDB enabled: {MONGODB_ENABLED}")
 
 # ============================================================================
 # FILE MANAGEMENT
@@ -73,14 +106,14 @@ def load_json_file(filepath, default):
 
 def save_json_file(filepath, data):
     try:
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
         with open(filepath, 'w') as f:
             json.dump(data, f, indent=2)
     except Exception as e:
         logger.error(f"Error saving {filepath}: {e}")
 
 # ============================================================================
-# OUTFIT DATABASE
+# OUTFIT DATABASE (20 SAMPLE OUTFITS)
 # ============================================================================
 
 OUTFIT_DATABASE = [
@@ -681,14 +714,14 @@ def generate_care_routines(clothing_style, climate, occasion, skin_tone=None, un
         tips.append("Balance proportions to create a flattering silhouette")
     
     if detect_face and skin_tone:
-        tips.append(f"Your {skin_tone} skin tone looks great with warm/cool colors - experiment to find your best palette")
+        tips.append(f"Your {skin_tone} skin tone looks great with warm/cool colors")
     
     tips.append("Maintain good personal hygiene for confidence in any setting")
     
     return tips[:10]
 
 # ============================================================================
-# HEALTH CHECK & CONFIGURATION
+# HEALTH & DEBUG ENDPOINTS
 # ============================================================================
 
 @app.route('/health', methods=['GET'])
@@ -710,70 +743,116 @@ def health_check():
         }), 500
 
 # ============================================================================
-# AUTHENTICATION ENDPOINTS
+# AUTHENTICATION ENDPOINTS - FIXED
 # ============================================================================
 
-@app.route('/auth/register', methods=['POST'])
+@app.route('/auth/register', methods=['POST', 'OPTIONS'])
 def register():
     """Register a new user"""
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
-        logger.info("=== REGISTER REQUEST ===")
+        logger.info("=" * 80)
+        logger.info("REGISTER REQUEST")
+        logger.info("=" * 80)
         
+        # Check MongoDB
         if not MONGODB_ENABLED:
-            logger.error("MongoDB is not enabled")
+            logger.error("MongoDB not enabled")
             return jsonify({
                 'status': 'error',
-                'message': 'User accounts are not available. Try the guest mode for recommendations.'
+                'message': 'Database not configured. User accounts unavailable.'
             }), 503
         
+        # Validate JSON
         if not request.is_json:
-            logger.warning("Request is not JSON")
+            logger.error(f"Not JSON. Content-Type: {request.content_type}")
             return jsonify({
                 'status': 'error',
-                'message': 'Request must be JSON'
+                'message': 'Content-Type must be application/json'
             }), 400
         
         data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'Empty request body'
+            }), 400
+        
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         profile = data.get('profile', {})
         
-        logger.info(f"Register attempt for: {email}")
+        logger.info(f"Register: email={email}")
         
-        # Validate input
-        if not email or not password:
-            logger.warning("Missing email or password")
+        # Validate
+        if not email or '@' not in email:
             return jsonify({
                 'status': 'error',
-                'message': 'Email and password are required'
+                'message': 'Valid email is required'
             }), 400
         
-        if len(password) < 6:
-            logger.warning(f"Password too short for: {email}")
+        if not password or len(password) < 6:
             return jsonify({
                 'status': 'error',
                 'message': 'Password must be at least 6 characters'
             }), 400
         
-        # Check if user exists
-        logger.info(f"Checking if user exists: {email}")
-        existing_user = User.find_by_email(email)
-        if existing_user:
-            logger.warning(f"User already exists: {email}")
+        # Check existing user
+        logger.info(f"Checking if {email} exists...")
+        try:
+            existing = User.find_by_email(email)
+            if existing:
+                logger.warning(f"User already exists: {email}")
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Email already registered'
+                }), 400
+        except Exception as e:
+            logger.error(f"DB error checking user: {e}")
             return jsonify({
                 'status': 'error',
-                'message': 'Email already registered'
-            }), 400
+                'message': f'Database error: {str(e)}'
+            }), 500
+        
+        # Hash password
+        logger.info("Hashing password...")
+        try:
+            password_hash = hash_password(password)
+            logger.info("Password hashed")
+        except Exception as e:
+            logger.error(f"Hashing error: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Password processing failed'
+            }), 500
         
         # Create user
-        logger.info(f"Creating new user: {email}")
-        password_hash = hash_password(password)
-        user = User.create(email, password_hash, profile)
+        logger.info("Creating user...")
+        try:
+            user = User.create(email, password_hash, profile)
+            logger.info(f"User created: {user.get('_id')}")
+        except Exception as e:
+            logger.error(f"Create error: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': f'Registration failed: {str(e)}'
+            }), 500
         
         # Generate token
-        token = generate_jwt_token(str(user['_id']), email)
-        logger.info(f"✅ User registered successfully: {email}")
+        logger.info("Generating token...")
+        try:
+            token = generate_jwt_token(str(user['_id']), email)
+            logger.info("Token generated")
+        except Exception as e:
+            logger.error(f"Token error: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Token generation failed'
+            }), 500
         
+        logger.info("✅ REGISTRATION SUCCESSFUL")
         return jsonify({
             'status': 'success',
             'message': 'User registered successfully',
@@ -786,66 +865,89 @@ def register():
         }), 201
     
     except Exception as e:
-        logger.error(f"❌ Register error: {str(e)}\n{traceback.format_exc()}")
+        logger.error(f"UNEXPECTED ERROR: {e}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
-            'message': 'Registration failed. Please try again.'
+            'message': 'Server error'
         }), 500
 
-@app.route('/auth/login', methods=['POST'])
+@app.route('/auth/login', methods=['POST', 'OPTIONS'])
 def login():
     """Login with email and password"""
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
-        logger.info("=== LOGIN REQUEST ===")
+        logger.info("=" * 80)
+        logger.info("LOGIN REQUEST")
+        logger.info("=" * 80)
         
         if not MONGODB_ENABLED:
-            logger.error("MongoDB is not enabled")
             return jsonify({
                 'status': 'error',
-                'message': 'User accounts are not available'
+                'message': 'Database not configured'
             }), 503
         
         if not request.is_json:
             return jsonify({
                 'status': 'error',
-                'message': 'Request must be JSON'
+                'message': 'Content-Type must be application/json'
             }), 400
         
         data = request.get_json()
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         
-        logger.info(f"Login attempt for: {email}")
+        logger.info(f"Login: email={email}")
         
         if not email or not password:
             return jsonify({
                 'status': 'error',
-                'message': 'Email and password are required'
+                'message': 'Email and password required'
             }), 400
         
         # Find user
-        logger.info(f"Finding user: {email}")
-        user = User.find_by_email(email)
-        
-        if not user:
-            logger.warning(f"User not found: {email}")
+        try:
+            user = User.find_by_email(email)
+            if not user:
+                logger.warning(f"User not found: {email}")
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Invalid credentials'
+                }), 401
+        except Exception as e:
+            logger.error(f"DB error: {e}")
             return jsonify({
                 'status': 'error',
-                'message': 'Invalid credentials'
-            }), 401
+                'message': f'Database error: {str(e)}'
+            }), 500
         
         # Verify password
-        if not verify_password(password, user.get('password_hash')):
-            logger.warning(f"Invalid password for: {email}")
+        try:
+            if not verify_password(password, user.get('password_hash')):
+                logger.warning(f"Invalid password for: {email}")
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Invalid credentials'
+                }), 401
+        except Exception as e:
+            logger.error(f"Password verify error: {e}")
             return jsonify({
                 'status': 'error',
-                'message': 'Invalid credentials'
-            }), 401
+                'message': 'Password verification failed'
+            }), 500
         
         # Generate token
-        token = generate_jwt_token(str(user['_id']), email)
-        logger.info(f"✅ Login successful: {email}")
+        try:
+            token = generate_jwt_token(str(user['_id']), email)
+        except Exception as e:
+            logger.error(f"Token error: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Token generation failed'
+            }), 500
         
+        logger.info("✅ LOGIN SUCCESSFUL")
         return jsonify({
             'status': 'success',
             'message': 'Login successful',
@@ -858,129 +960,23 @@ def login():
         }), 200
     
     except Exception as e:
-        logger.error(f"❌ Login error: {str(e)}\n{traceback.format_exc()}")
+        logger.error(f"UNEXPECTED ERROR: {e}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
-            'message': 'Login failed. Please try again.'
-        }), 500
-
-@app.route('/auth/magic-link', methods=['POST'])
-def request_magic_link():
-    """Request a magic link for passwordless login"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Magic links are not available'
-            }), 503
-        
-        data = request.get_json()
-        email = data.get('email', '').strip().lower()
-        
-        if not email:
-            return jsonify({
-                'status': 'error',
-                'message': 'Email is required'
-            }), 400
-        
-        # Check if user exists, if not create one
-        user = User.find_by_email(email)
-        if not user:
-            password_hash = hash_password(secrets.token_urlsafe(32))
-            user = User.create(email, password_hash)
-        
-        # Generate magic link token
-        token = generate_magic_link_token(email)
-        
-        # Send email
-        send_magic_link_email(email, token)
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Magic link sent to your email',
-            'dev_token': token if not os.getenv('SMTP_USER') else None
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Magic link error: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to send magic link'
-        }), 500
-
-@app.route('/auth/verify-magic', methods=['POST'])
-def verify_magic():
-    """Verify magic link token"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Magic links are not available'
-            }), 503
-        
-        data = request.get_json()
-        token = data.get('token', '')
-        
-        if not token:
-            return jsonify({
-                'status': 'error',
-                'message': 'Token is required'
-            }), 400
-        
-        # Verify token
-        email = verify_magic_link_token(token)
-        if not email:
-            return jsonify({
-                'status': 'error',
-                'message': 'Invalid or expired token'
-            }), 401
-        
-        # Find user
-        user = User.find_by_email(email)
-        if not user:
-            return jsonify({
-                'status': 'error',
-                'message': 'User not found'
-            }), 404
-        
-        # Generate JWT token
-        jwt_token = generate_jwt_token(str(user['_id']), email)
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Login successful',
-            'token': jwt_token,
-            'user': {
-                'id': str(user['_id']),
-                'email': user['email'],
-                'profile': user.get('profile', {})
-            }
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Magic verification error: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Verification failed'
+            'message': 'Server error'
         }), 500
 
 @app.route('/auth/me', methods=['GET'])
 @token_required
 def get_current_user():
-    """Get current user info"""
+    """Get current user"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'User accounts are not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Database not configured'}), 503
         
         user = User.find_by_id(request.current_user['user_id'])
         if not user:
-            return jsonify({
-                'status': 'error',
-                'message': 'User not found'
-            }), 404
+            return jsonify({'status': 'error', 'message': 'User not found'}), 404
         
         return jsonify({
             'status': 'success',
@@ -990,24 +986,17 @@ def get_current_user():
                 'profile': user.get('profile', {})
             }
         }), 200
-    
     except Exception as e:
-        logger.error(f"Get user error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to fetch user'
-        }), 500
+        logger.error(f"Get user error: {e}")
+        return jsonify({'status': 'error', 'message': 'Server error'}), 500
 
 @app.route('/auth/profile', methods=['PUT'])
 @token_required
 def update_profile():
-    """Update user profile"""
+    """Update profile"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'User accounts are not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Database not configured'}), 503
         
         data = request.get_json()
         profile = data.get('profile', {})
@@ -1016,20 +1005,16 @@ def update_profile():
         
         return jsonify({
             'status': 'success',
-            'message': 'Profile updated successfully',
+            'message': 'Profile updated',
             'user': {
                 'id': str(user['_id']),
                 'email': user['email'],
                 'profile': user.get('profile', {})
             }
         }), 200
-    
     except Exception as e:
-        logger.error(f"Profile update error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to update profile'
-        }), 500
+        logger.error(f"Profile update error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed to update profile'}), 500
 
 # ============================================================================
 # WARDROBE ENDPOINTS
@@ -1038,25 +1023,19 @@ def update_profile():
 @app.route('/wardrobe/items', methods=['GET'])
 @token_required
 def get_wardrobe_items():
-    """Get all wardrobe items"""
+    """Get wardrobe items"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Wardrobe feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         category = request.args.get('category')
         owned = request.args.get('owned')
-        occasion = request.args.get('occasion')
         
         filters = {}
         if category:
             filters['category'] = category
-        if owned is not None:
+        if owned:
             filters['owned'] = owned.lower() == 'true'
-        if occasion:
-            filters['occasion'] = occasion
         
         items = WardrobeItem.get_user_wardrobe(request.current_user['user_id'], filters)
         
@@ -1069,27 +1048,19 @@ def get_wardrobe_items():
             'items': items,
             'count': len(items)
         }), 200
-    
     except Exception as e:
-        logger.error(f"Get wardrobe error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to fetch wardrobe items'
-        }), 500
+        logger.error(f"Get wardrobe error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 @app.route('/wardrobe/add', methods=['POST'])
 @token_required
 def add_wardrobe_item():
-    """Add an item to wardrobe"""
+    """Add wardrobe item"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Wardrobe feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         data = request.get_json()
-        
         item = WardrobeItem.create(request.current_user['user_id'], data)
         
         item['_id'] = str(item['_id'])
@@ -1097,94 +1068,44 @@ def add_wardrobe_item():
         
         return jsonify({
             'status': 'success',
-            'message': 'Item added to wardrobe',
+            'message': 'Item added',
             'item': item
         }), 201
-    
     except Exception as e:
-        logger.error(f"Add wardrobe item error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to add item'
-        }), 500
-
-@app.route('/wardrobe/mark-owned/<item_id>', methods=['PUT'])
-@token_required
-def mark_item_owned(item_id):
-    """Mark item as owned"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Wardrobe feature is not available'
-            }), 503
-        
-        data = request.get_json()
-        owned = data.get('owned', True)
-        
-        WardrobeItem.mark_owned(item_id, owned)
-        
-        return jsonify({
-            'status': 'success',
-            'message': f'Item marked as {"owned" if owned else "not owned"}'
-        }), 200
-    
-    except Exception as e:
-        logger.error(f"Mark owned error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to update item'
-        }), 500
+        logger.error(f"Add item error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 @app.route('/wardrobe/remove/<item_id>', methods=['DELETE'])
 @token_required
 def remove_wardrobe_item(item_id):
-    """Remove item from wardrobe"""
+    """Remove item"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Wardrobe feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         WardrobeItem.remove_item(item_id, request.current_user['user_id'])
         
         return jsonify({
             'status': 'success',
-            'message': 'Item removed from wardrobe'
+            'message': 'Item removed'
         }), 200
-    
     except Exception as e:
-        logger.error(f"Remove item error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to remove item'
-        }), 500
+        logger.error(f"Remove error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 @app.route('/wardrobe/stats', methods=['GET'])
 @token_required
 def get_wardrobe_stats():
-    """Get wardrobe stats"""
+    """Get stats"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Wardrobe feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         stats = WardrobeItem.get_wardrobe_stats(request.current_user['user_id'])
-        
-        return jsonify({
-            'status': 'success',
-            'stats': stats
-        }), 200
-    
+        return jsonify({'status': 'success', 'stats': stats}), 200
     except Exception as e:
-        logger.error(f"Get stats error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to fetch statistics'
-        }), 500
+        logger.error(f"Stats error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 # ============================================================================
 # INSIGHTS ENDPOINTS
@@ -1193,70 +1114,44 @@ def get_wardrobe_stats():
 @app.route('/insights/gaps', methods=['GET'])
 @token_required
 def get_wardrobe_gaps():
-    """Get wardrobe gaps"""
+    """Get gaps"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Insights feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         user = User.find_by_id(request.current_user['user_id'])
         if not user:
-            return jsonify({
-                'status': 'error',
-                'message': 'User not found'
-            }), 404
+            return jsonify({'status': 'error', 'message': 'User not found'}), 404
         
         gaps = analyze_wardrobe_gaps(request.current_user['user_id'], user.get('profile', {}))
         
         for gap in gaps:
             query = gap.get('shopping_query', gap.get('item_name', ''))
-            encoded_query = quote_plus(query)
+            encoded = quote_plus(query)
             gap['shopping_links'] = {
-                'amazon': f"https://www.amazon.in/s?k={encoded_query}",
-                'flipkart': f"https://www.flipkart.com/search?q={encoded_query}",
-                'meesho': f"https://www.meesho.com/search?q={encoded_query}",
-                'myntra': f"https://www.myntra.com/{encoded_query}"
+                'amazon': f"https://www.amazon.in/s?k={encoded}",
+                'flipkart': f"https://www.flipkart.com/search?q={encoded}",
+                'meesho': f"https://www.meesho.com/search?q={encoded}"
             }
         
-        return jsonify({
-            'status': 'success',
-            'gaps': gaps,
-            'count': len(gaps)
-        }), 200
-    
+        return jsonify({'status': 'success', 'gaps': gaps, 'count': len(gaps)}), 200
     except Exception as e:
-        logger.error(f"Get gaps error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to fetch wardrobe gaps'
-        }), 500
+        logger.error(f"Gaps error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 @app.route('/insights/balance', methods=['GET'])
 @token_required
 def get_wardrobe_balance():
-    """Get wardrobe balance"""
+    """Get balance"""
     try:
         if not MONGODB_ENABLED:
-            return jsonify({
-                'status': 'error',
-                'message': 'Insights feature is not available'
-            }), 503
+            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
         
         balance = calculate_wardrobe_balance(request.current_user['user_id'])
-        
-        return jsonify({
-            'status': 'success',
-            'balance': balance
-        }), 200
-    
+        return jsonify({'status': 'success', 'balance': balance}), 200
     except Exception as e:
-        logger.error(f"Get balance error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to fetch balance metrics'
-        }), 500
+        logger.error(f"Balance error: {e}")
+        return jsonify({'status': 'error', 'message': 'Failed'}), 500
 
 # ============================================================================
 # PREDICTION ENDPOINT
@@ -1267,80 +1162,47 @@ def index():
     """API info"""
     return jsonify({
         "status": "running",
-        "message": "AI Fashion Stylist API is active",
-        "version": "2.1",
-        "features": {
-            "guest_mode": True,
-            "user_accounts": MONGODB_ENABLED,
-            "digital_wardrobe": MONGODB_ENABLED,
-            "wardrobe_intelligence": MONGODB_ENABLED
-        }
+        "message": "AI Fashion Stylist API v2.3",
+        "mongodb": MONGODB_ENABLED
     }), 200
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """Get outfit predictions"""
+    """Get predictions"""
     try:
         if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image file provided"}), 400
+            return jsonify({"status": "error", "message": "No image"}), 400
 
         file = request.files['image']
-        if file.filename == '':
-            return jsonify({"status": "error", "message": "No file selected"}), 400
+        if not file.filename:
+            return jsonify({"status": "error", "message": "No file"}), 400
 
         if not allowed_file(file.filename):
-            return jsonify({"status": "error", "message": "Invalid file type"}), 400
+            return jsonify({"status": "error", "message": "Invalid type"}), 400
 
-        # Get form values
         occasion = request.form.get('occasion', 'casual')
-        occasion_subtype = request.form.get('occasion_subtype', '')
         climate = request.form.get('climate', 'moderate')
         clothing_style = request.form.get('clothing_style', 'unisex')
         age_group = request.form.get('age_group', 'young')
         body_type = request.form.get('body_type', 'regular')
         budget = request.form.get('budget', 'medium')
-        detect_face = request.form.get('detect_face', 'false').lower() == 'true'
-        skin_tone = request.form.get('skin_tone', '')
-        undertone = request.form.get('undertone', '')
 
-        # Normalize inputs
-        if occasion not in ['casual', 'formal', 'party', 'ethnic']:
-            occasion = 'casual'
-        if climate not in ['hot', 'moderate', 'cold']:
-            climate = 'moderate'
-        if clothing_style not in ['mens', 'womens', 'unisex']:
-            clothing_style = 'unisex'
-        if age_group not in ['young', 'adult', 'senior']:
-            age_group = 'young'
-        if body_type not in ['slim', 'regular', 'relaxed']:
-            body_type = 'regular'
-        if budget not in ['low', 'medium', 'high']:
-            budget = 'medium'
-
-        # Get matching outfits
-        matching_outfits = rank_and_filter_outfits(
-            occasion, climate, clothing_style, age_group, body_type, budget,
-            occasion_subtype if occasion_subtype else None
+        matching = rank_and_filter_outfits(
+            occasion, climate, clothing_style, age_group, body_type, budget
         )
 
         result_outfits = []
-        for outfit in matching_outfits:
+        for outfit in matching:
             outfit_copy = outfit.copy()
             outfit_copy["shopping_links"] = generate_shopping_links(
                 outfit["items"],
                 outfit.get("gender", "unisex"),
                 outfit.get("budget", "medium"),
-                outfit.get("occasion", "casual"),
-                occasion_subtype if occasion_subtype in outfit.get("occasion_subtype", []) else None
+                outfit.get("occasion", "casual")
             )
             result_outfits.append(outfit_copy)
 
-        style_tips = generate_care_routines(
-            clothing_style, climate, occasion,
-            skin_tone if skin_tone else None,
-            undertone if undertone else None,
-            detect_face
-        )
+        tips = generate_care_routines(clothing_style, climate, occasion)
 
         return jsonify({
             "status": "success",
@@ -1348,16 +1210,13 @@ def predict():
                 "confidence": 0.95,
                 "clothing_type": "Uploaded Garment",
                 "outfits": result_outfits,
-                "style_tips": style_tips
+                "style_tips": tips
             }
         }), 200
 
     except Exception as e:
-        logger.error(f"Predict error: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({
-            "status": "error",
-            "message": "Failed to generate recommendations"
-        }), 500
+        logger.error(f"Predict error: {e}\n{traceback.format_exc()}")
+        return jsonify({"status": "error", "message": "Failed"}), 500
 
 # ============================================================================
 # ERROR HANDLERS
@@ -1365,18 +1224,12 @@ def predict():
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        'status': 'error',
-        'message': 'Endpoint not found'
-    }), 404
+    return jsonify({'status': 'error', 'message': 'Not found'}), 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    logger.error(f"500 Error: {str(error)}\n{traceback.format_exc()}")
-    return jsonify({
-        'status': 'error',
-        'message': 'Internal server error'
-    }), 500
+    logger.error(f"500: {error}\n{traceback.format_exc()}")
+    return jsonify({'status': 'error', 'message': 'Server error'}), 500
 
 # ============================================================================
 # APPLICATION STARTUP
@@ -1384,16 +1237,17 @@ def internal_error(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("DEBUG", "False").lower() == "true"
     
-    logger.info(f"Starting Fashion Stylist API on port {port}")
-    logger.info(f"MongoDB: {'Enabled' if MONGODB_ENABLED else 'Disabled'}")
+    logger.info("=" * 80)
+    logger.info(f"Starting API on port {port}")
+    logger.info(f"MongoDB: {'ENABLED' if MONGODB_ENABLED else 'DISABLED'}")
+    logger.info("=" * 80)
     
     if MONGODB_ENABLED:
         try:
             init_db()
-            logger.info("✅ Database initialized")
+            logger.info("✅ Database ready")
         except Exception as e:
-            logger.warning(f"⚠️ Database initialization warning: {e}")
+            logger.warning(f"⚠️ DB init: {e}")
     
-    app.run(debug=debug, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
