@@ -1,21 +1,39 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
+from werkzeuf.utils import secure_filename
 import os
 from urllib.parse import quote_plus
+import json
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 UPLOAD_FOLDER = 'uploads'
+DATA_FOLDER = 'data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(DATA_FOLDER, exist_ok=True)
+
+FAVORITES_FILE = os.path.join(DATA_FOLDER, 'favorites.json')
+RATINGS_FILE = os.path.join(DATA_FOLDER, 'ratings.json')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def load_json_file(filepath, default):
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    return default
+
+def save_json_file(filepath, data):
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
+
 OUTFIT_DATABASE = [
     {
+        "id": "outfit_001",
         "name": "Classic Casual Denim",
         "gender": "mens",
         "occasion": "casual",
@@ -24,9 +42,14 @@ OUTFIT_DATABASE = [
         "items": ["Blue Denim Jeans", "White Cotton T-Shirt", "Casual Sneakers"],
         "colors": ["Blue", "White"],
         "accessories": ["Sunglasses", "Wristwatch"],
-        "footwear": "Casual Sneakers"
+        "footwear": "Casual Sneakers",
+        "budget": "medium",
+        "brands": ["Levis", "Nike", "H&M"],
+        "style_tags": ["casual", "comfortable", "everyday"],
+        "season": ["spring", "summer", "fall"]
     },
     {
+        "id": "outfit_002",
         "name": "Summer Casual Shorts",
         "gender": "mens",
         "occasion": "casual",
@@ -35,9 +58,14 @@ OUTFIT_DATABASE = [
         "items": ["Khaki Shorts", "Polo Shirt", "Canvas Shoes"],
         "colors": ["Khaki", "Navy Blue"],
         "accessories": ["Cap", "Backpack"],
-        "footwear": "Canvas Shoes"
+        "footwear": "Canvas Shoes",
+        "budget": "low",
+        "brands": ["Zara", "Uniqlo", "Vans"],
+        "style_tags": ["sporty", "casual", "relaxed"],
+        "season": ["summer"]
     },
     {
+        "id": "outfit_003",
         "name": "Business Formal Suit",
         "gender": "mens",
         "occasion": "formal",
@@ -46,9 +74,14 @@ OUTFIT_DATABASE = [
         "items": ["Navy Blue Suit", "White Dress Shirt", "Black Leather Shoes", "Silk Tie"],
         "colors": ["Navy Blue", "White", "Black"],
         "accessories": ["Leather Belt", "Cufflinks", "Wristwatch"],
-        "footwear": "Black Leather Shoes"
+        "footwear": "Black Leather Shoes",
+        "budget": "high",
+        "brands": ["Raymond", "Louis Philippe", "Van Heusen"],
+        "style_tags": ["formal", "professional", "elegant"],
+        "season": ["fall", "winter", "spring"]
     },
     {
+        "id": "outfit_004",
         "name": "Smart Casual Blazer",
         "gender": "mens",
         "occasion": "formal",
@@ -57,9 +90,14 @@ OUTFIT_DATABASE = [
         "items": ["Grey Blazer", "Chinos", "Oxford Shoes", "Dress Shirt"],
         "colors": ["Grey", "Beige", "Brown"],
         "accessories": ["Leather Watch", "Pocket Square"],
-        "footwear": "Oxford Shoes"
+        "footwear": "Oxford Shoes",
+        "budget": "medium",
+        "brands": ["Allen Solly", "Peter England", "Clarks"],
+        "style_tags": ["smart-casual", "sophisticated", "versatile"],
+        "season": ["spring", "fall"]
     },
     {
+        "id": "outfit_005",
         "name": "Winter Casual Layers",
         "gender": "mens",
         "occasion": "casual",
@@ -68,9 +106,14 @@ OUTFIT_DATABASE = [
         "items": ["Hoodie", "Jeans", "Winter Jacket", "Boots"],
         "colors": ["Black", "Grey", "Brown"],
         "accessories": ["Beanie", "Scarf"],
-        "footwear": "Boots"
+        "footwear": "Boots",
+        "budget": "medium",
+        "brands": ["Puma", "Adidas", "Timberland"],
+        "style_tags": ["casual", "cozy", "layered"],
+        "season": ["winter"]
     },
     {
+        "id": "outfit_006",
         "name": "Casual Floral Dress",
         "gender": "womens",
         "occasion": "casual",
@@ -79,9 +122,14 @@ OUTFIT_DATABASE = [
         "items": ["Floral Midi Dress", "Sandals", "Denim Jacket"],
         "colors": ["Floral Print", "Blue"],
         "accessories": ["Sunglasses", "Crossbody Bag"],
-        "footwear": "Sandals"
+        "footwear": "Sandals",
+        "budget": "medium",
+        "brands": ["Zara", "Forever 21", "Mango"],
+        "style_tags": ["feminine", "casual", "trendy"],
+        "season": ["spring", "summer"]
     },
     {
+        "id": "outfit_007",
         "name": "Summer Breezy Outfit",
         "gender": "womens",
         "occasion": "casual",
@@ -90,9 +138,14 @@ OUTFIT_DATABASE = [
         "items": ["White Linen Top", "High Waisted Shorts", "Espadrilles"],
         "colors": ["White", "Denim Blue"],
         "accessories": ["Straw Hat", "Tote Bag"],
-        "footwear": "Espadrilles"
+        "footwear": "Espadrilles",
+        "budget": "low",
+        "brands": ["H&M", "Lifestyle", "Westside"],
+        "style_tags": ["breezy", "casual", "comfortable"],
+        "season": ["summer"]
     },
     {
+        "id": "outfit_008",
         "name": "Elegant Evening Gown",
         "gender": "womens",
         "occasion": "formal",
@@ -101,9 +154,14 @@ OUTFIT_DATABASE = [
         "items": ["Black Evening Gown", "Heels", "Clutch"],
         "colors": ["Black"],
         "accessories": ["Pearl Necklace", "Bracelet", "Earrings"],
-        "footwear": "Heels"
+        "footwear": "Heels",
+        "budget": "high",
+        "brands": ["Sabyasachi", "Manish Malhotra", "Tarun Tahiliani"],
+        "style_tags": ["elegant", "formal", "luxurious"],
+        "season": ["fall", "winter", "spring"]
     },
     {
+        "id": "outfit_009",
         "name": "Professional Pantsuit",
         "gender": "womens",
         "occasion": "formal",
@@ -112,9 +170,14 @@ OUTFIT_DATABASE = [
         "items": ["Blazer", "Dress Pants", "Blouse", "Pumps"],
         "colors": ["Navy", "White"],
         "accessories": ["Statement Watch", "Tote Bag"],
-        "footwear": "Pumps"
+        "footwear": "Pumps",
+        "budget": "medium",
+        "brands": ["W", "AND", "Van Heusen Woman"],
+        "style_tags": ["professional", "formal", "powerful"],
+        "season": ["spring", "fall"]
     },
     {
+        "id": "outfit_010",
         "name": "Cozy Winter Layers",
         "gender": "womens",
         "occasion": "casual",
@@ -123,9 +186,14 @@ OUTFIT_DATABASE = [
         "items": ["Sweater", "Jeans", "Coat", "Ankle Boots"],
         "colors": ["Burgundy", "Black", "Camel"],
         "accessories": ["Scarf", "Gloves"],
-        "footwear": "Ankle Boots"
+        "footwear": "Ankle Boots",
+        "budget": "medium",
+        "brands": ["Zara", "Marks & Spencer", "Vero Moda"],
+        "style_tags": ["cozy", "layered", "warm"],
+        "season": ["winter"]
     },
     {
+        "id": "outfit_011",
         "name": "Cocktail Party Dress",
         "gender": "womens",
         "occasion": "formal",
@@ -134,9 +202,14 @@ OUTFIT_DATABASE = [
         "items": ["Cocktail Dress", "Strappy Heels", "Clutch"],
         "colors": ["Red", "Gold"],
         "accessories": ["Drop Earrings", "Bracelet"],
-        "footwear": "Strappy Heels"
+        "footwear": "Strappy Heels",
+        "budget": "high",
+        "brands": ["Shein", "FabIndia", "Global Desi"],
+        "style_tags": ["glamorous", "party", "chic"],
+        "season": ["spring", "summer", "fall"]
     },
     {
+        "id": "outfit_012",
         "name": "Basic Unisex Casual",
         "gender": "unisex",
         "occasion": "casual",
@@ -145,9 +218,14 @@ OUTFIT_DATABASE = [
         "items": ["Plain T-Shirt", "Jeans", "Sneakers"],
         "colors": ["Black", "Blue"],
         "accessories": ["Backpack"],
-        "footwear": "Sneakers"
+        "footwear": "Sneakers",
+        "budget": "low",
+        "brands": ["Decathlon", "Max", "Reliance Trends"],
+        "style_tags": ["minimal", "casual", "basic"],
+        "season": ["spring", "summer", "fall"]
     },
     {
+        "id": "outfit_013",
         "name": "Athleisure Comfort",
         "gender": "unisex",
         "occasion": "casual",
@@ -156,9 +234,14 @@ OUTFIT_DATABASE = [
         "items": ["Joggers", "Hoodie", "Running Shoes"],
         "colors": ["Grey", "Black"],
         "accessories": ["Sports Watch", "Gym Bag"],
-        "footwear": "Running Shoes"
+        "footwear": "Running Shoes",
+        "budget": "medium",
+        "brands": ["Nike", "Adidas", "Puma"],
+        "style_tags": ["sporty", "comfortable", "athletic"],
+        "season": ["spring", "summer", "fall", "winter"]
     },
     {
+        "id": "outfit_014",
         "name": "Smart Casual Neutrals",
         "gender": "unisex",
         "occasion": "formal",
@@ -167,9 +250,24 @@ OUTFIT_DATABASE = [
         "items": ["Blazer", "Trousers", "Loafers", "Button Up Shirt"],
         "colors": ["Beige", "White", "Brown"],
         "accessories": ["Leather Belt", "Watch"],
-        "footwear": "Loafers"
+        "footwear": "Loafers",
+        "budget": "medium",
+        "brands": ["Gap", "Banana Republic", "Massimo Dutti"],
+        "style_tags": ["smart-casual", "neutral", "versatile"],
+        "season": ["spring", "fall"]
     }
 ]
+
+def get_current_season():
+    month = datetime.now().month
+    if month in [12, 1, 2]:
+        return "winter"
+    elif month in [3, 4, 5]:
+        return "spring"
+    elif month in [6, 7, 8]:
+        return "summer"
+    else:
+        return "fall"
 
 def generate_shopping_links(items):
     links = []
@@ -185,7 +283,83 @@ def generate_shopping_links(items):
         })
     return links
 
-def filter_outfits(occasion, climate, clothing_style, age_group):
+def filter_by_color_preference(outfits, color_preferences):
+    if not color_preferences:
+        return outfits
+    
+    color_prefs_lower = [c.lower() for c in color_preferences]
+    filtered = []
+    
+    for outfit in outfits:
+        outfit_colors_lower = [c.lower() for c in outfit["colors"]]
+        if any(pref in outfit_colors_lower for pref in color_prefs_lower):
+            filtered.append(outfit)
+    
+    return filtered if filtered else outfits
+
+def filter_by_budget(outfits, budget_range):
+    if not budget_range:
+        return outfits
+    
+    budget_order = {"low": 1, "medium": 2, "high": 3}
+    filtered = []
+    
+    for outfit in outfits:
+        if outfit["budget"] == budget_range:
+            filtered.append(outfit)
+    
+    return filtered if filtered else outfits
+
+def filter_by_brand(outfits, brand_preferences):
+    if not brand_preferences:
+        return outfits
+    
+    brand_prefs_lower = [b.lower() for b in brand_preferences]
+    filtered = []
+    
+    for outfit in outfits:
+        outfit_brands_lower = [b.lower() for b in outfit["brands"]]
+        if any(pref in outfit_brands_lower for pref in brand_prefs_lower):
+            filtered.append(outfit)
+    
+    return filtered if filtered else outfits
+
+def filter_by_style_tags(outfits, style_tags):
+    if not style_tags:
+        return outfits
+    
+    style_tags_lower = [s.lower() for s in style_tags]
+    filtered = []
+    
+    for outfit in outfits:
+        outfit_tags_lower = [t.lower() for t in outfit["style_tags"]]
+        if any(tag in outfit_tags_lower for tag in style_tags_lower):
+            filtered.append(outfit)
+    
+    return filtered if filtered else outfits
+
+def filter_by_season(outfits, season_preference):
+    if not season_preference:
+        season_preference = get_current_season()
+    
+    filtered = []
+    
+    for outfit in outfits:
+        if season_preference in outfit["season"]:
+            filtered.append(outfit)
+    
+    return filtered if filtered else outfits
+
+def get_outfit_rating(outfit_id):
+    ratings = load_json_file(RATINGS_FILE, {})
+    if outfit_id in ratings:
+        total = sum(ratings[outfit_id])
+        count = len(ratings[outfit_id])
+        return round(total / count, 2) if count > 0 else 0
+    return 0
+
+def filter_outfits(occasion, climate, clothing_style, age_group, color_preferences=None, 
+                   budget_range=None, brand_preferences=None, style_tags=None, season_preference=None):
     filtered = []
     
     for outfit in OUTFIT_DATABASE:
@@ -208,6 +382,12 @@ def filter_outfits(occasion, climate, clothing_style, age_group):
             continue
         
         filtered.append(outfit)
+    
+    filtered = filter_by_color_preference(filtered, color_preferences)
+    filtered = filter_by_budget(filtered, budget_range)
+    filtered = filter_by_brand(filtered, brand_preferences)
+    filtered = filter_by_style_tags(filtered, style_tags)
+    filtered = filter_by_season(filtered, season_preference)
     
     return filtered[:3]
 
@@ -236,6 +416,21 @@ def predict():
     clothing_style = request.form.get('clothing_style', 'unisex')
     age_group = request.form.get('age_group', 'young')
     
+    color_preferences = request.form.get('color_preferences', '')
+    color_preferences = [c.strip() for c in color_preferences.split(',')] if color_preferences else None
+    
+    budget_range = request.form.get('budget_range', '')
+    budget_range = budget_range if budget_range in ['low', 'medium', 'high'] else None
+    
+    brand_preferences = request.form.get('brand_preferences', '')
+    brand_preferences = [b.strip() for b in brand_preferences.split(',')] if brand_preferences else None
+    
+    style_tags = request.form.get('style_tags', '')
+    style_tags = [s.strip() for s in style_tags.split(',')] if style_tags else None
+    
+    season_preference = request.form.get('season_preference', '')
+    season_preference = season_preference if season_preference in ['spring', 'summer', 'fall', 'winter'] else None
+    
     if occasion not in ['casual', 'formal']:
         occasion = 'casual'
     
@@ -252,12 +447,15 @@ def predict():
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
     
-    matching_outfits = filter_outfits(occasion, climate, clothing_style, age_group)
+    matching_outfits = filter_outfits(occasion, climate, clothing_style, age_group,
+                                     color_preferences, budget_range, brand_preferences,
+                                     style_tags, season_preference)
     
     result_outfits = []
     for outfit in matching_outfits:
         outfit_copy = outfit.copy()
         outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"])
+        outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         result_outfits.append(outfit_copy)
     
     return jsonify({
@@ -266,6 +464,110 @@ def predict():
             "confidence": 0.95,
             "outfits": result_outfits
         }
+    })
+
+@app.route('/favorites', methods=['GET'])
+def get_favorites():
+    user_id = request.args.get('user_id', 'default_user')
+    favorites = load_json_file(FAVORITES_FILE, {})
+    user_favorites = favorites.get(user_id, [])
+    
+    favorite_outfits = []
+    for outfit_id in user_favorites:
+        outfit = next((o for o in OUTFIT_DATABASE if o["id"] == outfit_id), None)
+        if outfit:
+            outfit_copy = outfit.copy()
+            outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"])
+            outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
+            favorite_outfits.append(outfit_copy)
+    
+    return jsonify({
+        "status": "success",
+        "favorites": favorite_outfits
+    })
+
+@app.route('/favorites/add', methods=['POST'])
+def add_favorite():
+    data = request.get_json()
+    user_id = data.get('user_id', 'default_user')
+    outfit_id = data.get('outfit_id')
+    
+    if not outfit_id:
+        return jsonify({"status": "error", "message": "outfit_id required"}), 400
+    
+    favorites = load_json_file(FAVORITES_FILE, {})
+    
+    if user_id not in favorites:
+        favorites[user_id] = []
+    
+    if outfit_id not in favorites[user_id]:
+        favorites[user_id].append(outfit_id)
+        save_json_file(FAVORITES_FILE, favorites)
+        return jsonify({"status": "success", "message": "Added to favorites"})
+    
+    return jsonify({"status": "success", "message": "Already in favorites"})
+
+@app.route('/favorites/remove', methods=['POST'])
+def remove_favorite():
+    data = request.get_json()
+    user_id = data.get('user_id', 'default_user')
+    outfit_id = data.get('outfit_id')
+    
+    if not outfit_id:
+        return jsonify({"status": "error", "message": "outfit_id required"}), 400
+    
+    favorites = load_json_file(FAVORITES_FILE, {})
+    
+    if user_id in favorites and outfit_id in favorites[user_id]:
+        favorites[user_id].remove(outfit_id)
+        save_json_file(FAVORITES_FILE, favorites)
+        return jsonify({"status": "success", "message": "Removed from favorites"})
+    
+    return jsonify({"status": "success", "message": "Not in favorites"})
+
+@app.route('/rate', methods=['POST'])
+def rate_outfit():
+    data = request.get_json()
+    outfit_id = data.get('outfit_id')
+    rating = data.get('rating')
+    
+    if not outfit_id or rating is None:
+        return jsonify({"status": "error", "message": "outfit_id and rating required"}), 400
+    
+    try:
+        rating = float(rating)
+        if rating < 1 or rating > 5:
+            return jsonify({"status": "error", "message": "Rating must be between 1 and 5"}), 400
+    except ValueError:
+        return jsonify({"status": "error", "message": "Invalid rating value"}), 400
+    
+    ratings = load_json_file(RATINGS_FILE, {})
+    
+    if outfit_id not in ratings:
+        ratings[outfit_id] = []
+    
+    ratings[outfit_id].append(rating)
+    save_json_file(RATINGS_FILE, ratings)
+    
+    average_rating = sum(ratings[outfit_id]) / len(ratings[outfit_id])
+    
+    return jsonify({
+        "status": "success",
+        "message": "Rating submitted",
+        "average_rating": round(average_rating, 2)
+    })
+
+@app.route('/ratings/<outfit_id>', methods=['GET'])
+def get_rating(outfit_id):
+    average_rating = get_outfit_rating(outfit_id)
+    ratings = load_json_file(RATINGS_FILE, {})
+    rating_count = len(ratings.get(outfit_id, []))
+    
+    return jsonify({
+        "status": "success",
+        "outfit_id": outfit_id,
+        "average_rating": average_rating,
+        "rating_count": rating_count
     })
 
 if __name__ == '__main__':
