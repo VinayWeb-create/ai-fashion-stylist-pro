@@ -7,6 +7,7 @@ from config import Config
 import logging
 import ssl
 import traceback
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ logger.info("INITIALIZING MONGODB CONNECTION")
 logger.info("=" * 80)
 
 # ============================================================================
-# MONGODB CONNECTION - FIXED
+# MONGODB CONNECTION - FULLY FIXED
 # ============================================================================
 
 client = None
@@ -26,21 +27,26 @@ insights_collection = None
 MONGODB_CONNECTED = False
 
 def connect_to_mongodb():
-    """Connect to MongoDB with error handling"""
+    """Connect to MongoDB with detailed error logging"""
     global client, db, users_collection, wardrobe_collection, insights_collection, MONGODB_CONNECTED
     
     try:
-        mongodb_uri = Config.MONGODB_URI
-        database_name = Config.DATABASE_NAME
+        # Check config
+        mongodb_uri = getattr(Config, 'MONGODB_URI', None)
+        database_name = getattr(Config, 'DATABASE_NAME', None)
+        
+        logger.info(f"📝 Config.MONGODB_URI: {mongodb_uri[:60] if mongodb_uri else 'NOT SET'}...")
+        logger.info(f"📝 Config.DATABASE_NAME: {database_name}")
         
         if not mongodb_uri:
-            raise Exception("MONGODB_URI not configured")
+            raise Exception("MONGODB_URI not found in Config")
         
-        logger.info(f"📝 MongoDB URI: {mongodb_uri[:60]}...")
-        logger.info(f"📝 Database: {database_name}")
-        logger.info("🔗 Connecting to MongoDB...")
+        if not database_name:
+            raise Exception("DATABASE_NAME not found in Config")
         
-        # Create connection
+        logger.info("🔗 Creating MongoClient...")
+        
+        # Create connection with debug
         client = MongoClient(
             mongodb_uri,
             tls=True,
@@ -55,40 +61,63 @@ def connect_to_mongodb():
             appName='fashion-stylist'
         )
         
-        # Test connection
-        logger.info("🔄 Testing connection...")
-        client.admin.command('ping')
-        logger.info("✅ Connection successful!")
+        logger.info("✅ MongoClient created")
         
-        # Get database and collections
+        # Test connection with detailed error handling
+        logger.info("🔄 Testing connection with ping...")
+        try:
+            client.admin.command('ping', timeoutMS=5000)
+            logger.info("✅ Ping successful!")
+        except Exception as ping_error:
+            logger.error(f"❌ Ping failed: {type(ping_error).__name__}: {str(ping_error)}")
+            raise
+        
+        # Get database
+        logger.info(f"📦 Connecting to database: {database_name}")
         db = client[database_name]
+        logger.info("✅ Database connected")
+        
+        # Get collections
+        logger.info("📋 Creating collection references...")
         users_collection = db['users']
         wardrobe_collection = db['wardrobe']
         insights_collection = db['insights']
+        logger.info("✅ Collections created")
         
-        logger.info("✅ Collections initialized:")
-        logger.info(f"   - users_collection: {users_collection}")
-        logger.info(f"   - wardrobe_collection: {wardrobe_collection}")
-        logger.info(f"   - insights_collection: {insights_collection}")
+        # Verify collections are valid
+        logger.info("✔️ Verifying collections...")
+        logger.info(f"   users_collection: {type(users_collection)}")
+        logger.info(f"   wardrobe_collection: {type(wardrobe_collection)}")
+        logger.info(f"   insights_collection: {type(insights_collection)}")
         
         MONGODB_CONNECTED = True
         logger.info("=" * 80)
-        logger.info("✅ MONGODB READY")
+        logger.info("✅ MONGODB FULLY READY")
         logger.info("=" * 80)
         return True
         
     except Exception as e:
         logger.error("=" * 80)
-        logger.error(f"❌ MONGODB CONNECTION FAILED")
+        logger.error("❌ MONGODB CONNECTION FAILED")
         logger.error("=" * 80)
-        logger.error(f"Error: {type(e).__name__}: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(f"Error Type: {type(e).__name__}")
+        logger.error(f"Error Message: {str(e)}")
+        logger.error(f"Traceback:\n{traceback.format_exc()}")
         logger.error("=" * 80)
         MONGODB_CONNECTED = False
+        client = None
+        db = None
+        users_collection = None
+        wardrobe_collection = None
+        insights_collection = None
         return False
 
 # Try to connect
-connect_to_mongodb()
+logger.info("Calling connect_to_mongodb()...")
+success = connect_to_mongodb()
+logger.info(f"Connection result: {success}")
+logger.info(f"MONGODB_CONNECTED: {MONGODB_CONNECTED}")
+logger.info(f"users_collection is None: {users_collection is None}")
 
 # ============================================================================
 # DATABASE INITIALIZATION
@@ -141,14 +170,16 @@ class User:
     def create(email, password_hash, profile=None):
         """Create a new user"""
         logger.info(f"[User.create] Email: {email}")
+        logger.info(f"[User.create] MONGODB_CONNECTED: {MONGODB_CONNECTED}")
+        logger.info(f"[User.create] users_collection is None: {users_collection is None}")
         
         if not MONGODB_CONNECTED:
             logger.error("[User.create] ❌ MongoDB not connected!")
-            raise Exception("Database connection failed. Check MongoDB configuration.")
+            raise Exception("Database connection failed. MongoDB not connected.")
         
         if users_collection is None:
             logger.error("[User.create] ❌ users_collection is None!")
-            raise Exception("Database connection failed. Check MongoDB configuration.")
+            raise Exception("Database connection failed. users_collection is None.")
         
         try:
             user_data = {
@@ -184,14 +215,16 @@ class User:
     def find_by_email(email):
         """Find user by email"""
         logger.info(f"[User.find_by_email] Email: {email}")
+        logger.info(f"[User.find_by_email] MONGODB_CONNECTED: {MONGODB_CONNECTED}")
+        logger.info(f"[User.find_by_email] users_collection is None: {users_collection is None}")
         
         if not MONGODB_CONNECTED:
             logger.error("[User.find_by_email] ❌ MongoDB not connected!")
-            raise Exception("Database connection failed. Check MongoDB configuration.")
+            raise Exception("Database connection failed. MongoDB not connected.")
         
         if users_collection is None:
             logger.error("[User.find_by_email] ❌ users_collection is None!")
-            raise Exception("Database connection failed. Check MongoDB configuration.")
+            raise Exception("Database connection failed. users_collection is None.")
         
         try:
             logger.info(f"[User.find_by_email] Querying...")
@@ -200,7 +233,7 @@ class User:
             if result:
                 logger.info(f"[User.find_by_email] ✅ Found: {result['_id']}")
             else:
-                logger.info(f"[User.find_by_email] Not found")
+                logger.info(f"[User.find_by_email] User not found")
             
             return result
         
@@ -218,7 +251,7 @@ class User:
             raise Exception("Database connection failed.")
         
         if users_collection is None:
-            raise Exception("Database connection failed.")
+            raise Exception("users_collection is None.")
         
         try:
             from bson import ObjectId
@@ -431,5 +464,9 @@ class WardrobeInsights:
             raise
 
 logger.info("=" * 80)
-logger.info(f"✅ MODELS LOADED (MongoDB: {MONGODB_CONNECTED})")
+logger.info(f"✅ MODELS LOADED")
+logger.info(f"   MONGODB_CONNECTED: {MONGODB_CONNECTED}")
+logger.info(f"   users_collection: {type(users_collection).__name__ if users_collection else 'None'}")
+logger.info(f"   wardrobe_collection: {type(wardrobe_collection).__name__ if wardrobe_collection else 'None'}")
+logger.info(f"   insights_collection: {type(insights_collection).__name__ if insights_collection else 'None'}")
 logger.info("=" * 80)
