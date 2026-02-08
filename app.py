@@ -38,7 +38,7 @@ OUTFIT_DATABASE = [
         "gender": "mens",
         "occasion": "casual",
         "climate": ["hot", "moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Blue Denim Jeans", "White Cotton T-Shirt", "Casual Sneakers"],
         "colors": ["Blue", "White"],
         "accessories": ["Sunglasses", "Wristwatch"],
@@ -46,7 +46,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Levis", "Nike", "H&M"],
         "style_tags": ["casual", "comfortable", "everyday"],
-        "season": ["spring", "summer", "fall"]
+        "season": ["spring", "summer", "fall"],
+        "description": "A timeless casual look perfect for everyday wear",
+        "reasoning": "This outfit combines comfort with style, ideal for relaxed settings"
     },
     {
         "id": "outfit_002",
@@ -54,7 +56,7 @@ OUTFIT_DATABASE = [
         "gender": "mens",
         "occasion": "casual",
         "climate": ["hot"],
-        "age": ["young"],
+        "age_group": ["young"],
         "items": ["Khaki Shorts", "Polo Shirt", "Canvas Shoes"],
         "colors": ["Khaki", "Navy Blue"],
         "accessories": ["Cap", "Backpack"],
@@ -62,7 +64,9 @@ OUTFIT_DATABASE = [
         "budget": "low",
         "brands": ["Zara", "Uniqlo", "Vans"],
         "style_tags": ["sporty", "casual", "relaxed"],
-        "season": ["summer"]
+        "season": ["summer"],
+        "description": "Perfect for hot weather outdoor activities",
+        "reasoning": "Lightweight and breathable materials keep you cool in the heat"
     },
     {
         "id": "outfit_003",
@@ -70,7 +74,7 @@ OUTFIT_DATABASE = [
         "gender": "mens",
         "occasion": "formal",
         "climate": ["moderate", "cold"],
-        "age": ["adult", "senior"],
+        "age_group": ["adult", "senior"],
         "items": ["Navy Blue Suit", "White Dress Shirt", "Black Leather Shoes", "Silk Tie"],
         "colors": ["Navy Blue", "White", "Black"],
         "accessories": ["Leather Belt", "Cufflinks", "Wristwatch"],
@@ -78,7 +82,9 @@ OUTFIT_DATABASE = [
         "budget": "high",
         "brands": ["Raymond", "Louis Philippe", "Van Heusen"],
         "style_tags": ["formal", "professional", "elegant"],
-        "season": ["fall", "winter", "spring"]
+        "season": ["fall", "winter", "spring"],
+        "description": "Classic business attire for important meetings",
+        "reasoning": "Professional appearance with timeless sophistication"
     },
     {
         "id": "outfit_004",
@@ -86,7 +92,7 @@ OUTFIT_DATABASE = [
         "gender": "mens",
         "occasion": "formal",
         "climate": ["moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Grey Blazer", "Chinos", "Oxford Shoes", "Dress Shirt"],
         "colors": ["Grey", "Beige", "Brown"],
         "accessories": ["Leather Watch", "Pocket Square"],
@@ -94,7 +100,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Allen Solly", "Peter England", "Clarks"],
         "style_tags": ["smart-casual", "sophisticated", "versatile"],
-        "season": ["spring", "fall"]
+        "season": ["spring", "fall"],
+        "description": "Versatile smart-casual for semi-formal occasions",
+        "reasoning": "Balances professionalism with approachability"
     },
     {
         "id": "outfit_005",
@@ -102,7 +110,7 @@ OUTFIT_DATABASE = [
         "gender": "mens",
         "occasion": "casual",
         "climate": ["cold"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Hoodie", "Jeans", "Winter Jacket", "Boots"],
         "colors": ["Black", "Grey", "Brown"],
         "accessories": ["Beanie", "Scarf"],
@@ -110,7 +118,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Puma", "Adidas", "Timberland"],
         "style_tags": ["casual", "cozy", "layered"],
-        "season": ["winter"]
+        "season": ["winter"],
+        "description": "Warm and stylish layers for cold weather",
+        "reasoning": "Multiple layers provide warmth without sacrificing style"
     },
     {
         "id": "outfit_006",
@@ -118,7 +128,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "casual",
         "climate": ["hot", "moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Floral Midi Dress", "Sandals", "Denim Jacket"],
         "colors": ["Floral Print", "Blue"],
         "accessories": ["Sunglasses", "Crossbody Bag"],
@@ -126,7 +136,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Zara", "Forever 21", "Mango"],
         "style_tags": ["feminine", "casual", "trendy"],
-        "season": ["spring", "summer"]
+        "season": ["spring", "summer"],
+        "description": "Feminine and breezy for casual outings",
+        "reasoning": "Floral patterns add a fresh, cheerful touch"
     },
     {
         "id": "outfit_007",
@@ -134,7 +146,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "casual",
         "climate": ["hot"],
-        "age": ["young"],
+        "age_group": ["young"],
         "items": ["White Linen Top", "High Waisted Shorts", "Espadrilles"],
         "colors": ["White", "Denim Blue"],
         "accessories": ["Straw Hat", "Tote Bag"],
@@ -142,7 +154,9 @@ OUTFIT_DATABASE = [
         "budget": "low",
         "brands": ["H&M", "Lifestyle", "Westside"],
         "style_tags": ["breezy", "casual", "comfortable"],
-        "season": ["summer"]
+        "season": ["summer"],
+        "description": "Light and airy for hot summer days",
+        "reasoning": "Natural fabrics keep you cool and comfortable"
     },
     {
         "id": "outfit_008",
@@ -150,7 +164,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "formal",
         "climate": ["moderate", "cold"],
-        "age": ["adult", "senior"],
+        "age_group": ["adult", "senior"],
         "items": ["Black Evening Gown", "Heels", "Clutch"],
         "colors": ["Black"],
         "accessories": ["Pearl Necklace", "Bracelet", "Earrings"],
@@ -158,7 +172,9 @@ OUTFIT_DATABASE = [
         "budget": "high",
         "brands": ["Sabyasachi", "Manish Malhotra", "Tarun Tahiliani"],
         "style_tags": ["elegant", "formal", "luxurious"],
-        "season": ["fall", "winter", "spring"]
+        "season": ["fall", "winter", "spring"],
+        "description": "Sophisticated elegance for formal events",
+        "reasoning": "Timeless black creates a stunning formal appearance"
     },
     {
         "id": "outfit_009",
@@ -166,7 +182,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "formal",
         "climate": ["moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Blazer", "Dress Pants", "Blouse", "Pumps"],
         "colors": ["Navy", "White"],
         "accessories": ["Statement Watch", "Tote Bag"],
@@ -174,7 +190,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["W", "AND", "Van Heusen Woman"],
         "style_tags": ["professional", "formal", "powerful"],
-        "season": ["spring", "fall"]
+        "season": ["spring", "fall"],
+        "description": "Empowering professional attire",
+        "reasoning": "Sharp tailoring conveys confidence and competence"
     },
     {
         "id": "outfit_010",
@@ -182,7 +200,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "casual",
         "climate": ["cold"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Sweater", "Jeans", "Coat", "Ankle Boots"],
         "colors": ["Burgundy", "Black", "Camel"],
         "accessories": ["Scarf", "Gloves"],
@@ -190,7 +208,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Zara", "Marks & Spencer", "Vero Moda"],
         "style_tags": ["cozy", "layered", "warm"],
-        "season": ["winter"]
+        "season": ["winter"],
+        "description": "Warm and stylish for cold weather",
+        "reasoning": "Rich colors and textures create a cozy aesthetic"
     },
     {
         "id": "outfit_011",
@@ -198,7 +218,7 @@ OUTFIT_DATABASE = [
         "gender": "womens",
         "occasion": "formal",
         "climate": ["hot", "moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Cocktail Dress", "Strappy Heels", "Clutch"],
         "colors": ["Red", "Gold"],
         "accessories": ["Drop Earrings", "Bracelet"],
@@ -206,7 +226,9 @@ OUTFIT_DATABASE = [
         "budget": "high",
         "brands": ["Shein", "FabIndia", "Global Desi"],
         "style_tags": ["glamorous", "party", "chic"],
-        "season": ["spring", "summer", "fall"]
+        "season": ["spring", "summer", "fall"],
+        "description": "Glamorous cocktail attire for parties",
+        "reasoning": "Bold colors make a memorable statement"
     },
     {
         "id": "outfit_012",
@@ -214,7 +236,7 @@ OUTFIT_DATABASE = [
         "gender": "unisex",
         "occasion": "casual",
         "climate": ["hot", "moderate"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Plain T-Shirt", "Jeans", "Sneakers"],
         "colors": ["Black", "Blue"],
         "accessories": ["Backpack"],
@@ -222,7 +244,9 @@ OUTFIT_DATABASE = [
         "budget": "low",
         "brands": ["Decathlon", "Max", "Reliance Trends"],
         "style_tags": ["minimal", "casual", "basic"],
-        "season": ["spring", "summer", "fall"]
+        "season": ["spring", "summer", "fall"],
+        "description": "Simple and versatile everyday wear",
+        "reasoning": "Minimalist approach works for any casual setting"
     },
     {
         "id": "outfit_013",
@@ -230,7 +254,7 @@ OUTFIT_DATABASE = [
         "gender": "unisex",
         "occasion": "casual",
         "climate": ["hot", "moderate", "cold"],
-        "age": ["young", "adult"],
+        "age_group": ["young", "adult"],
         "items": ["Joggers", "Hoodie", "Running Shoes"],
         "colors": ["Grey", "Black"],
         "accessories": ["Sports Watch", "Gym Bag"],
@@ -238,7 +262,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Nike", "Adidas", "Puma"],
         "style_tags": ["sporty", "comfortable", "athletic"],
-        "season": ["spring", "summer", "fall", "winter"]
+        "season": ["spring", "summer", "fall", "winter"],
+        "description": "Athletic comfort meets street style",
+        "reasoning": "Performance fabrics provide all-day comfort"
     },
     {
         "id": "outfit_014",
@@ -246,7 +272,7 @@ OUTFIT_DATABASE = [
         "gender": "unisex",
         "occasion": "formal",
         "climate": ["moderate"],
-        "age": ["adult"],
+        "age_group": ["adult"],
         "items": ["Blazer", "Trousers", "Loafers", "Button Up Shirt"],
         "colors": ["Beige", "White", "Brown"],
         "accessories": ["Leather Belt", "Watch"],
@@ -254,7 +280,9 @@ OUTFIT_DATABASE = [
         "budget": "medium",
         "brands": ["Gap", "Banana Republic", "Massimo Dutti"],
         "style_tags": ["smart-casual", "neutral", "versatile"],
-        "season": ["spring", "fall"]
+        "season": ["spring", "fall"],
+        "description": "Refined neutrals for versatile wear",
+        "reasoning": "Neutral tones create sophisticated versatility"
     }
 ]
 
@@ -286,67 +314,52 @@ def generate_shopping_links(items):
 def filter_by_color_preference(outfits, color_preferences):
     if not color_preferences:
         return outfits
-    
     color_prefs_lower = [c.lower() for c in color_preferences]
     filtered = []
-    
     for outfit in outfits:
         outfit_colors_lower = [c.lower() for c in outfit["colors"]]
         if any(pref in outfit_colors_lower for pref in color_prefs_lower):
             filtered.append(outfit)
-    
     return filtered if filtered else outfits
 
 def filter_by_budget(outfits, budget_range):
     if not budget_range:
         return outfits
-    
     filtered = []
-    
     for outfit in outfits:
         if outfit["budget"] == budget_range:
             filtered.append(outfit)
-    
     return filtered if filtered else outfits
 
 def filter_by_brand(outfits, brand_preferences):
     if not brand_preferences:
         return outfits
-    
     brand_prefs_lower = [b.lower() for b in brand_preferences]
     filtered = []
-    
     for outfit in outfits:
         outfit_brands_lower = [b.lower() for b in outfit["brands"]]
         if any(pref in outfit_brands_lower for pref in brand_prefs_lower):
             filtered.append(outfit)
-    
     return filtered if filtered else outfits
 
 def filter_by_style_tags(outfits, style_tags):
     if not style_tags:
         return outfits
-    
     style_tags_lower = [s.lower() for s in style_tags]
     filtered = []
-    
     for outfit in outfits:
         outfit_tags_lower = [t.lower() for t in outfit["style_tags"]]
         if any(tag in outfit_tags_lower for tag in style_tags_lower):
             filtered.append(outfit)
-    
     return filtered if filtered else outfits
 
 def filter_by_season(outfits, season_preference):
     if not season_preference:
         season_preference = get_current_season()
-    
     filtered = []
-    
     for outfit in outfits:
         if season_preference in outfit["season"]:
             filtered.append(outfit)
-    
     return filtered if filtered else outfits
 
 def get_outfit_rating(outfit_id):
@@ -360,213 +373,81 @@ def get_outfit_rating(outfit_id):
 def filter_outfits(occasion, climate, clothing_style, age_group, color_preferences=None, 
                    budget_range=None, brand_preferences=None, style_tags=None, season_preference=None):
     filtered = []
-    
     for outfit in OUTFIT_DATABASE:
         if outfit["occasion"] != occasion:
             continue
-        
         if climate not in outfit["climate"]:
             continue
-        
-        if age_group not in outfit["age"]:
+        if age_group not in outfit["age_group"]:
             continue
-        
         if clothing_style == "mens" and outfit["gender"] == "womens":
             continue
-        
         if clothing_style == "womens" and outfit["gender"] == "mens":
             continue
-        
         if clothing_style in ["mens", "womens"] and outfit["gender"] not in [clothing_style, "unisex"]:
             continue
-        
         filtered.append(outfit)
-    
     filtered = filter_by_color_preference(filtered, color_preferences)
     filtered = filter_by_budget(filtered, budget_range)
     filtered = filter_by_brand(filtered, brand_preferences)
     filtered = filter_by_style_tags(filtered, style_tags)
     filtered = filter_by_season(filtered, season_preference)
-    
     return filtered[:3]
 
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({
-        "status": "running",
-        "message": "Fashion Recommendation API is active"
-    })
+    return jsonify({"status": "running", "message": "Fashion Recommendation API is active"})
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
         return jsonify({"status": "error", "message": "No image file provided"}), 400
-    
     file = request.files['image']
-    
     if file.filename == '':
         return jsonify({"status": "error", "message": "No file selected"}), 400
-    
     if not allowed_file(file.filename):
         return jsonify({"status": "error", "message": "Invalid file type"}), 400
-    
     occasion = request.form.get('occasion', 'casual')
     climate = request.form.get('climate', 'moderate')
     clothing_style = request.form.get('clothing_style', 'unisex')
     age_group = request.form.get('age_group', 'young')
-    
     color_preferences = request.form.get('color_preferences', '')
     color_preferences = [c.strip() for c in color_preferences.split(',')] if color_preferences else None
-    
     budget_range = request.form.get('budget_range', '')
     budget_range = budget_range if budget_range in ['low', 'medium', 'high'] else None
-    
     brand_preferences = request.form.get('brand_preferences', '')
     brand_preferences = [b.strip() for b in brand_preferences.split(',')] if brand_preferences else None
-    
     style_tags = request.form.get('style_tags', '')
     style_tags = [s.strip() for s in style_tags.split(',')] if style_tags else None
-    
     season_preference = request.form.get('season_preference', '')
     season_preference = season_preference if season_preference in ['spring', 'summer', 'fall', 'winter'] else None
-    
     if occasion not in ['casual', 'formal']:
         occasion = 'casual'
-    
     if climate not in ['hot', 'moderate', 'cold']:
         climate = 'moderate'
-    
     if clothing_style not in ['mens', 'womens', 'unisex']:
         clothing_style = 'unisex'
-    
     if age_group not in ['young', 'adult', 'senior']:
         age_group = 'young'
-    
     filename = secure_filename(file.filename)
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
-    
     matching_outfits = filter_outfits(occasion, climate, clothing_style, age_group,
                                      color_preferences, budget_range, brand_preferences,
                                      style_tags, season_preference)
-    
     result_outfits = []
     for outfit in matching_outfits:
         outfit_copy = outfit.copy()
         outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"])
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         result_outfits.append(outfit_copy)
-    
     return jsonify({
         "status": "success",
         "prediction": {
             "confidence": 0.95,
+            "clothing_type": "Uploaded Garment",
             "outfits": result_outfits
         }
-    })
-
-@app.route('/favorites', methods=['GET'])
-def get_favorites():
-    user_id = request.args.get('user_id', 'default_user')
-    favorites = load_json_file(FAVORITES_FILE, {})
-    user_favorites = favorites.get(user_id, [])
-    
-    favorite_outfits = []
-    for outfit_id in user_favorites:
-        outfit = next((o for o in OUTFIT_DATABASE if o["id"] == outfit_id), None)
-        if outfit:
-            outfit_copy = outfit.copy()
-            outfit_copy["shopping_links"] = generate_shopping_links(outfit["items"])
-            outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
-            favorite_outfits.append(outfit_copy)
-    
-    return jsonify({
-        "status": "success",
-        "favorites": favorite_outfits
-    })
-
-@app.route('/favorites/add', methods=['POST'])
-def add_favorite():
-    data = request.get_json()
-    user_id = data.get('user_id', 'default_user')
-    outfit_id = data.get('outfit_id')
-    
-    if not outfit_id:
-        return jsonify({"status": "error", "message": "outfit_id required"}), 400
-    
-    favorites = load_json_file(FAVORITES_FILE, {})
-    
-    if user_id not in favorites:
-        favorites[user_id] = []
-    
-    if outfit_id not in favorites[user_id]:
-        favorites[user_id].append(outfit_id)
-        save_json_file(FAVORITES_FILE, favorites)
-        return jsonify({"status": "success", "message": "Added to favorites"})
-    
-    return jsonify({"status": "success", "message": "Already in favorites"})
-
-@app.route('/favorites/remove', methods=['POST'])
-def remove_favorite():
-    data = request.get_json()
-    user_id = data.get('user_id', 'default_user')
-    outfit_id = data.get('outfit_id')
-    
-    if not outfit_id:
-        return jsonify({"status": "error", "message": "outfit_id required"}), 400
-    
-    favorites = load_json_file(FAVORITES_FILE, {})
-    
-    if user_id in favorites and outfit_id in favorites[user_id]:
-        favorites[user_id].remove(outfit_id)
-        save_json_file(FAVORITES_FILE, favorites)
-        return jsonify({"status": "success", "message": "Removed from favorites"})
-    
-    return jsonify({"status": "success", "message": "Not in favorites"})
-
-@app.route('/rate', methods=['POST'])
-def rate_outfit():
-    data = request.get_json()
-    outfit_id = data.get('outfit_id')
-    rating = data.get('rating')
-    
-    if not outfit_id or rating is None:
-        return jsonify({"status": "error", "message": "outfit_id and rating required"}), 400
-    
-    try:
-        rating = float(rating)
-        if rating < 1 or rating > 5:
-            return jsonify({"status": "error", "message": "Rating must be between 1 and 5"}), 400
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid rating value"}), 400
-    
-    ratings = load_json_file(RATINGS_FILE, {})
-    
-    if outfit_id not in ratings:
-        ratings[outfit_id] = []
-    
-    ratings[outfit_id].append(rating)
-    save_json_file(RATINGS_FILE, ratings)
-    
-    average_rating = sum(ratings[outfit_id]) / len(ratings[outfit_id])
-    
-    return jsonify({
-        "status": "success",
-        "message": "Rating submitted",
-        "average_rating": round(average_rating, 2)
-    })
-
-@app.route('/ratings/<outfit_id>', methods=['GET'])
-def get_rating(outfit_id):
-    average_rating = get_outfit_rating(outfit_id)
-    ratings = load_json_file(RATINGS_FILE, {})
-    rating_count = len(ratings.get(outfit_id, []))
-    
-    return jsonify({
-        "status": "success",
-        "outfit_id": outfit_id,
-        "average_rating": average_rating,
-        "rating_count": rating_count
     })
 
 if __name__ == '__main__':
