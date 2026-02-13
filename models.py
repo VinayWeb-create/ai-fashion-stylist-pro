@@ -28,30 +28,31 @@ _db_initialized = False
 def init_db():
     """Initialize database indexes lazily to prevent startup timeouts"""
     global _db_initialized
+    print("DEBUG: Entering init_db", flush=True)
     if _db_initialized:
+        print("DEBUG: init_db already initialized", flush=True)
         return
     
     try:
         # Create indexes
-        print("Initializing database indexes...")
+        print("DEBUG: Starting index creation...", flush=True)
         
         # Verify collections are not None before index creation
         if users_collection is not None:
+            print("DEBUG: Creating index for users_collection", flush=True)
             users_collection.create_index([('email', ASCENDING)], unique=True)
         if wardrobe_collection is not None:
+            print("DEBUG: Creating index for wardrobe_collection", flush=True)
             wardrobe_collection.create_index([('user_id', ASCENDING)])
             wardrobe_collection.create_index([('user_id', ASCENDING), ('category', ASCENDING)])
         if insights_collection is not None:
+            print("DEBUG: Creating index for insights_collection", flush=True)
             insights_collection.create_index([('user_id', ASCENDING)])
             
         _db_initialized = True
-        print("Database indexes created successfully")
+        print("DEBUG: Database indexes created successfully", flush=True)
     except Exception as e:
-        # Changed message to match typical user log format for better troubleshooting
-        print(f"Index creation error: {e}")
-        # We don't raise here to allow the app to boot even if DB is partially unreachable
-        # Pymongo will retry on actual data operations
-        # Pymongo will retry on actual data operations
+        print(f"DEBUG: Error inside models.py init_db: {e}", flush=True)
 
 class User:
     """User model for authentication and profile"""
