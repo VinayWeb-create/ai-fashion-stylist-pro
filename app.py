@@ -1,107 +1,49 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 import os
 from urllib.parse import quote_plus
 import json
 from datetime import datetime
+from bson import ObjectId
 import secrets
-import logging
-import traceback
-import sys
-from models import connect_to_mongodb, init_db
 
-# ============================================================================
-# LOGGING CONFIGURATION
-# ============================================================================
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-    ]
-)
-logger = logging.getLogger(__name__)
-
-logger.info("=" * 80)
-logger.info("STARTING FASHION STYLIST API v2.3")
-logger.info("=" * 80)
-
-# ============================================================================
-# IMPORT MODULES
-# ============================================================================
-
-MONGODB_ENABLED = False
-
+# Import new modules
 try:
-    logger.info("📦 Importing auth module...")
     from auth import (
         hash_password, verify_password, generate_jwt_token, 
         verify_jwt_token, generate_magic_link_token, verify_magic_link_token,
         send_magic_link_email, token_required, optional_token
     )
-    logger.info("✅ Auth module imported")
-except Exception as e:
-    logger.error(f"❌ Auth import failed: {e}")
-    sys.exit(1)
-
-try:
-    logger.info("📦 Importing models module...")
     from models import User, WardrobeItem, WardrobeInsights, init_db
-    logger.info("✅ Models module imported")
+    from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
     MONGODB_ENABLED = True
 except Exception as e:
-    logger.error(f"❌ Models import failed: {e}")
+    print(f"MongoDB features disabled: {e}")
     MONGODB_ENABLED = False
-
-try:
-    logger.info("📦 Importing wardrobe_intelligence module...")
-    from wardrobe_intelligence import analyze_wardrobe_gaps, calculate_wardrobe_balance
-    logger.info("✅ Wardrobe intelligence module imported")
-except Exception as e:
-    logger.error(f"❌ Wardrobe intelligence import failed: {e}")
-
-# ============================================================================
-# FLASK APP SETUP
-# ============================================================================
+    # Create dummy decorators when MongoDB is disabled
+    def token_required(f):
+        return f
+    def optional_token(f):
+        return f
 
 app = Flask(__name__)
-_db_started = False
+CORS(app)
 
 @app.before_request
-def startup_db_once():
-    global _db_started
-
-    if _db_started:
-        return
-
-    app.logger.info("🔌 Connecting to MongoDB...")
-    connected = connect_to_mongodb()
-
-    if connected:
-        init_db()
-        app.logger.info("✅ MongoDB connected and initialized")
-        _db_started = True
-    else:
-        app.logger.error("❌ MongoDB connection failed")
-
-app.config['JSON_SORT_KEYS'] = False
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max file size
-
-CORS(app, resources={
-    r"/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
-
-logger.info(f"✅ Flask app created")
-logger.info(f"✅ MongoDB enabled: {MONGODB_ENABLED}")
-
-# ============================================================================
-# FILE MANAGEMENT
-# ============================================================================
+def ensure_db_init():
+    """Ensure database is initialized before any request, but don't block forever"""
+    if MONGODB_ENABLED and not getattr(app, '_db_ready', False):
+        try:
+            # Check connection with a quick ping
+            from pymongo.errors import ServerSelectionTimeoutError
+            from models import client
+            client.admin.command('ping')
+            init_db()
+            app._db_ready = True
+        except Exception as e:
+            app.logger.warning(f"Lazy DB initialization skipped or failed: {e}")
+            # We don't set _db_ready to True so it can retry next time
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 UPLOAD_FOLDER = 'uploads'
@@ -116,25 +58,14 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def load_json_file(filepath, default):
-    try:
-        if os.path.exists(filepath):
-            with open(filepath, 'r') as f:
-                return json.load(f)
-    except Exception as e:
-        logger.warning(f"Error loading {filepath}: {e}")
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            return json.load(f)
     return default
 
 def save_json_file(filepath, data):
-    try:
-        os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2)
-    except Exception as e:
-        logger.error(f"Error saving {filepath}: {e}")
-
-# ============================================================================
-# OUTFIT DATABASE (20 SAMPLE OUTFITS)
-# ============================================================================
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
 
 OUTFIT_DATABASE = [
     {
@@ -155,8 +86,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["casual", "comfortable", "everyday"],
         "season": ["spring", "summer", "fall"],
         "description": "A timeless casual look perfect for everyday wear",
-        "reasoning": "This outfit combines comfort with style, ideal for relaxed settings",
-        "average_rating": 4.5
+        "reasoning": "This outfit combines comfort with style, ideal for relaxed settings"
     },
     {
         "id": "outfit_002",
@@ -176,8 +106,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["sporty", "casual", "relaxed"],
         "season": ["summer"],
         "description": "Perfect for hot weather outdoor activities",
-        "reasoning": "Lightweight and breathable materials keep you cool in the heat",
-        "average_rating": 4.3
+        "reasoning": "Lightweight and breathable materials keep you cool in the heat"
     },
     {
         "id": "outfit_003",
@@ -197,8 +126,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["formal", "professional", "elegant"],
         "season": ["fall", "winter", "spring"],
         "description": "Classic business attire for important meetings",
-        "reasoning": "Professional appearance with timeless sophistication",
-        "average_rating": 4.7
+        "reasoning": "Professional appearance with timeless sophistication"
     },
     {
         "id": "outfit_004",
@@ -218,8 +146,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["smart-casual", "sophisticated", "versatile"],
         "season": ["spring", "fall"],
         "description": "Versatile smart-casual for semi-formal occasions",
-        "reasoning": "Balances professionalism with approachability",
-        "average_rating": 4.4
+        "reasoning": "Balances professionalism with approachability"
     },
     {
         "id": "outfit_005",
@@ -239,8 +166,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["casual", "cozy", "layered"],
         "season": ["winter"],
         "description": "Warm and stylish layers for cold weather",
-        "reasoning": "Multiple layers provide warmth without sacrificing style",
-        "average_rating": 4.6
+        "reasoning": "Multiple layers provide warmth without sacrificing style"
     },
     {
         "id": "outfit_006",
@@ -260,8 +186,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["feminine", "casual", "trendy"],
         "season": ["spring", "summer"],
         "description": "Feminine and breezy for casual outings",
-        "reasoning": "Floral patterns add a fresh, cheerful touch",
-        "average_rating": 4.5
+        "reasoning": "Floral patterns add a fresh, cheerful touch"
     },
     {
         "id": "outfit_007",
@@ -281,8 +206,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["breezy", "casual", "comfortable"],
         "season": ["summer"],
         "description": "Light and airy for hot summer days",
-        "reasoning": "Natural fabrics keep you cool and comfortable",
-        "average_rating": 4.2
+        "reasoning": "Natural fabrics keep you cool and comfortable"
     },
     {
         "id": "outfit_008",
@@ -302,8 +226,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["elegant", "formal", "luxurious"],
         "season": ["fall", "winter", "spring"],
         "description": "Sophisticated elegance for formal events",
-        "reasoning": "Timeless black creates a stunning formal appearance",
-        "average_rating": 4.8
+        "reasoning": "Timeless black creates a stunning formal appearance"
     },
     {
         "id": "outfit_009",
@@ -323,8 +246,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["professional", "formal", "powerful"],
         "season": ["spring", "fall"],
         "description": "Empowering professional attire",
-        "reasoning": "Sharp tailoring conveys confidence and competence",
-        "average_rating": 4.6
+        "reasoning": "Sharp tailoring conveys confidence and competence"
     },
     {
         "id": "outfit_010",
@@ -344,8 +266,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["cozy", "layered", "warm"],
         "season": ["winter"],
         "description": "Warm and stylish for cold weather",
-        "reasoning": "Rich colors and textures create a cozy aesthetic",
-        "average_rating": 4.5
+        "reasoning": "Rich colors and textures create a cozy aesthetic"
     },
     {
         "id": "outfit_011",
@@ -365,8 +286,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["glamorous", "party", "chic"],
         "season": ["spring", "summer", "fall"],
         "description": "Glamorous cocktail attire for parties",
-        "reasoning": "Bold colors make a memorable statement",
-        "average_rating": 4.4
+        "reasoning": "Bold colors make a memorable statement"
     },
     {
         "id": "outfit_012",
@@ -386,8 +306,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["minimal", "casual", "basic"],
         "season": ["spring", "summer", "fall"],
         "description": "Simple and versatile everyday wear",
-        "reasoning": "Minimalist approach works for any casual setting",
-        "average_rating": 4.0
+        "reasoning": "Minimalist approach works for any casual setting"
     },
     {
         "id": "outfit_013",
@@ -407,8 +326,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["sporty", "comfortable", "athletic"],
         "season": ["spring", "summer", "fall", "winter"],
         "description": "Athletic comfort meets street style",
-        "reasoning": "Performance fabrics provide all-day comfort",
-        "average_rating": 4.3
+        "reasoning": "Performance fabrics provide all-day comfort"
     },
     {
         "id": "outfit_014",
@@ -428,8 +346,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["smart-casual", "neutral", "versatile"],
         "season": ["spring", "fall"],
         "description": "Refined neutrals for versatile wear",
-        "reasoning": "Neutral tones create sophisticated versatility",
-        "average_rating": 4.5
+        "reasoning": "Neutral tones create sophisticated versatility"
     },
     {
         "id": "outfit_015",
@@ -449,8 +366,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["urban", "streetwear", "edgy"],
         "season": ["spring", "summer", "fall"],
         "description": "Bold urban streetwear style",
-        "reasoning": "Modern street fashion with attitude",
-        "average_rating": 4.2
+        "reasoning": "Modern street fashion with attitude"
     },
     {
         "id": "outfit_016",
@@ -470,8 +386,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["preppy", "classic", "smart-casual"],
         "season": ["spring", "fall"],
         "description": "Classic preppy casual style",
-        "reasoning": "Timeless preppy aesthetic with modern touch",
-        "average_rating": 4.3
+        "reasoning": "Timeless preppy aesthetic with modern touch"
     },
     {
         "id": "outfit_017",
@@ -491,8 +406,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["boho", "feminine", "relaxed"],
         "season": ["spring", "summer"],
         "description": "Bohemian chic casual style",
-        "reasoning": "Free-spirited and effortlessly stylish",
-        "average_rating": 4.4
+        "reasoning": "Free-spirited and effortlessly stylish"
     },
     {
         "id": "outfit_018",
@@ -512,8 +426,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["minimalist", "elegant", "modern"],
         "season": ["spring", "fall", "winter"],
         "description": "Clean minimalist formal look",
-        "reasoning": "Sophisticated simplicity makes a statement",
-        "average_rating": 4.6
+        "reasoning": "Sophisticated simplicity makes a statement"
     },
     {
         "id": "outfit_019",
@@ -533,8 +446,7 @@ OUTFIT_DATABASE = [
         "style_tags": ["traditional", "elegant", "festive"],
         "season": ["spring", "summer", "fall", "winter"],
         "description": "Classic traditional ethnic attire",
-        "reasoning": "Timeless elegance for cultural celebrations",
-        "average_rating": 4.7
+        "reasoning": "Timeless elegance for cultural celebrations"
     },
     {
         "id": "outfit_020",
@@ -554,17 +466,11 @@ OUTFIT_DATABASE = [
         "style_tags": ["traditional", "festive", "elegant"],
         "season": ["spring", "summer", "fall", "winter"],
         "description": "Traditional festive attire for men",
-        "reasoning": "Perfect blend of tradition and contemporary style",
-        "average_rating": 4.5
+        "reasoning": "Perfect blend of tradition and contemporary style"
     }
 ]
 
-# ============================================================================
-# UTILITY FUNCTIONS
-# ============================================================================
-
 def get_current_season():
-    """Get current season"""
     month = datetime.now().month
     if month in [12, 1, 2]:
         return "winter"
@@ -576,7 +482,6 @@ def get_current_season():
         return "fall"
 
 def generate_shopping_links(items, gender="unisex", budget="medium", occasion="casual", occasion_subtype=None):
-    """Generate shopping links for items"""
     links = []
     
     budget_hints = {
@@ -620,9 +525,9 @@ def generate_shopping_links(items, gender="unisex", budget="medium", occasion="c
     return links
 
 def calculate_outfit_score(outfit, clothing_style, occasion, occasion_subtype, climate, body_type, budget):
-    """Calculate outfit match score"""
     score = 0
     
+    # Critical Match: Gender
     if outfit["gender"] == clothing_style:
         score += 100
     elif outfit["gender"] == "unisex":
@@ -630,25 +535,31 @@ def calculate_outfit_score(outfit, clothing_style, occasion, occasion_subtype, c
     else:
         return 0
     
+    # High Priority: Occasion
     if outfit["occasion"] == occasion:
-        score += 50
+        score += 80
     
+    # Sub-occasion match
     if occasion_subtype and occasion_subtype in outfit.get("occasion_subtype", []):
+        score += 40
+    
+    # Climate match
+    if climate in outfit["climate"]:
         score += 30
     
-    if climate in outfit["climate"]:
-        score += 20
-    
+    # Medium Priority: Body Type (Enhanced)
     if body_type in outfit.get("body_type", []):
-        score += 15
+        score += 60 # Increased weight
     
+    # Medium Priority: Budget (Enhanced)
     if outfit["budget"] == budget:
-        score += 10
+        score += 40 # Increased weight
+    elif (budget == "medium" and (outfit["budget"] == "low")) or (budget == "high"):
+        score += 20 # Partial match
     
     return score
 
 def rank_and_filter_outfits(occasion, climate, clothing_style, age_group, body_type, budget, occasion_subtype=None):
-    """Rank and filter outfits based on criteria"""
     scored_outfits = []
     
     for outfit in OUTFIT_DATABASE:
@@ -670,7 +581,6 @@ def rank_and_filter_outfits(occasion, climate, clothing_style, age_group, body_t
     return [outfit for score, outfit in scored_outfits[:3]]
 
 def generate_care_routines(clothing_style, climate, occasion, skin_tone=None, undertone=None, detect_face=False):
-    """Generate style tips and care routines"""
     tips = []
     
     fashion_tips_map = {
@@ -734,345 +644,247 @@ def generate_care_routines(clothing_style, climate, occasion, skin_tone=None, un
         tips.append("Balance proportions to create a flattering silhouette")
     
     if detect_face and skin_tone:
-        tips.append(f"Your {skin_tone} skin tone looks great with warm/cool colors")
+        if skin_tone in ["fair", "light"]:
+            tips.append("Morning: Use a gentle, hydrating face wash suitable for sensitive skin")
+            tips.append("Before outing: Apply SPF 50 sunscreen to protect fair skin from UV damage")
+            if climate == "cold":
+                tips.append("Night care: Use a rich cream moisturizer to combat dryness")
+            else:
+                tips.append("Daily: A lightweight hydrating moisturizer keeps skin balanced")
+        elif skin_tone in ["wheatish", "medium"]:
+            tips.append("Morning: A gel-based face wash helps maintain your skin's natural balance")
+            tips.append("Before outing: SPF 30+ sunscreen is essential for daily protection")
+            if climate == "hot":
+                tips.append("Daily: Use an oil-free moisturizer to prevent excess shine")
+            else:
+                tips.append("Daily: A lightweight moisturizer provides hydration without heaviness")
+        elif skin_tone in ["dusky", "deep"]:
+            tips.append("Morning: Use a cream-based cleanser to nourish and cleanse deeply")
+            tips.append("Before outing: SPF 30 sunscreen helps protect against sun damage")
+            tips.append("Daily: A nourishing moisturizer keeps your skin healthy and glowing")
+        
+        if undertone == "warm" and clothing_style == "womens":
+            tips.append("Warm-toned makeup bases complement your natural undertone beautifully")
+        elif undertone == "cool" and clothing_style == "womens":
+            tips.append("Cool or neutral makeup bases enhance your natural complexion")
+        
+        if clothing_style == "mens":
+            tips.append("Grooming: Keep facial hair well-groomed with regular trimming and beard oil")
+        elif clothing_style == "womens":
+            tips.append("Makeup: Choose lip and blush shades that harmonize with your outfit colors")
+    else:
+        tips.append("Maintain good personal hygiene for confidence in any setting")
+        if climate == "hot":
+            tips.append("Morning: Use a refreshing face wash to stay fresh throughout the day")
+        else:
+            tips.append("Daily: Keep your skin moisturized to maintain a healthy appearance")
     
-    tips.append("Maintain good personal hygiene for confidence in any setting")
+    if climate == "cold":
+        tips.append("Night care: Don't forget lip balm to prevent chapped lips in cold weather")
+    
+    if occasion == "formal":
+        tips.append("Before outing: A subtle, clean fragrance completes your polished look")
+    elif occasion == "party":
+        tips.append("Before outing: Choose a signature fragrance that reflects your personality")
+    
+    if clothing_style == "mens" and climate == "hot":
+        tips.append("During day: Use a sweat-resistant face mist to stay fresh")
     
     return tips[:10]
 
-# ============================================================================
-# HEALTH & DEBUG ENDPOINTS
-# ============================================================================
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    try:
-        db_status = "connected" if MONGODB_ENABLED else "disabled"
-        return jsonify({
-            'status': 'ok',
-            'message': 'Server is running',
-            'database': db_status,
-            'timestamp': datetime.now().isoformat()
-        }), 200
-    except Exception as e:
-        logger.error(f"Health check error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
-
-
-
-
-
+def get_outfit_rating(outfit_id):
+    ratings = load_json_file(RATINGS_FILE, {})
+    if outfit_id in ratings:
+        total = sum(ratings[outfit_id])
+        count = len(ratings[outfit_id])
+        return round(total / count, 2) if count > 0 else 0
+    return 0
 
 # ============================================================================
-# FIXED REGISTRATION ENDPOINT
+# AUTHENTICATION ENDPOINTS
 # ============================================================================
 
-@app.route('/auth/register', methods=['POST', 'OPTIONS'])
+@app.route('/auth/register', methods=['POST'])
 def register():
     """Register a new user"""
-    if request.method == 'OPTIONS':
-        return '', 204
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
     
-    try:
-        logger.info("=" * 80)
-        logger.info("REGISTER REQUEST")
-        logger.info("=" * 80)
-        
-        # Step 1: Check if request is JSON
-        if not request.is_json:
-            logger.error(f"Not JSON. Content-Type: {request.content_type}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Content-Type must be application/json'
-            }), 400
-        
-        # Step 2: Get request data
-        data = request.get_json()
-        if not data:
-            logger.error("Empty request body")
-            return jsonify({
-                'status': 'error',
-                'message': 'Empty request body'
-            }), 400
-        
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        profile = data.get('profile', {})
-        
-        logger.info(f"Email: {email}")
-        logger.info(f"Has password: {bool(password)}")
-        
-        # Step 3: Validate input
-        if not email or '@' not in email:
-            logger.warning(f"Invalid email: {email}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Valid email is required'
-            }), 400
-        
-        if not password or len(password) < 6:
-            logger.warning(f"Invalid password (len: {len(password)})")
-            return jsonify({
-                'status': 'error',
-                'message': 'Password must be at least 6 characters'
-            }), 400
-        
-        # Step 4: Check MongoDB is enabled
-        if not MONGODB_ENABLED:
-            logger.error("MongoDB is not enabled!")
-            return jsonify({
-                'status': 'error',
-                'message': 'Database not configured. User accounts unavailable.'
-            }), 503
-        
-        # Step 5: Check if user exists
-        logger.info(f"Checking if user exists...")
-        try:
-            existing_user = User.find_by_email(email)
-            if existing_user:
-                logger.warning(f"User already exists: {email}")
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Email already registered'
-                }), 400
-            logger.info("User does not exist - proceeding with registration")
-        except Exception as e:
-            logger.error(f"Database error checking user: {str(e)}")
-            logger.error(traceback.format_exc())
-            return jsonify({
-                'status': 'error',
-                'message': f'Database error: {str(e)}'
-            }), 503
-        
-        # Step 6: Hash password
-        logger.info("Hashing password...")
-        try:
-            password_hash = hash_password(password)
-            logger.info("Password hashed successfully")
-        except Exception as e:
-            logger.error(f"Password hashing error: {str(e)}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Password processing failed'
-            }), 500
-        
-        # Step 7: Create user in database
-        logger.info("Creating user in database...")
-        try:
-            user = User.create(email, password_hash, profile)
-            logger.info(f"User created successfully. ID: {user.get('_id')}")
-        except Exception as e:
-            logger.error(f"User creation error: {str(e)}")
-            logger.error(traceback.format_exc())
-            return jsonify({
-                'status': 'error',
-                'message': f'User creation failed: {str(e)}'
-            }), 503
-        
-        # Step 8: Generate JWT token
-        logger.info("Generating JWT token...")
-        try:
-            token = generate_jwt_token(str(user['_id']), email)
-            logger.info("JWT token generated")
-        except Exception as e:
-            logger.error(f"Token generation error: {str(e)}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Token generation failed'
-            }), 500
-        
-        # Step 9: Return success response
-        logger.info("✅ REGISTRATION SUCCESSFUL")
-        logger.info("=" * 80)
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'User registered successfully',
-            'token': token,
-            'user': {
-                'id': str(user['_id']),
-                'email': user['email'],
-                'profile': user.get('profile', {})
-            }
-        }), 201
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    profile = data.get('profile', {})
     
-    except Exception as e:
-        logger.error("=" * 80)
-        logger.error(f"❌ UNEXPECTED ERROR: {str(e)}")
-        logger.error(f"Type: {type(e).__name__}")
-        logger.error(traceback.format_exc())
-        logger.error("=" * 80)
-        
-        return jsonify({
-            'status': 'error',
-            'message': 'Server error during registration'
-        }), 500
+    if not email or not password:
+        return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
+    
+    # Check if user already exists
+    existing_user = User.find_by_email(email)
+    if existing_user:
+        return jsonify({'status': 'error', 'message': 'User already exists'}), 400
+    
+    # Create user
+    password_hash = hash_password(password)
+    user = User.create(email, password_hash, profile)
+    
+    # Generate JWT token
+    token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'User registered successfully',
+        'token': token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    }), 201
 
-
-@app.route('/auth/login', methods=['POST', 'OPTIONS'])
+@app.route('/auth/login', methods=['POST'])
 def login():
     """Login with email and password"""
-    if request.method == 'OPTIONS':
-        return '', 204
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
     
-    try:
-        logger.info("=" * 80)
-        logger.info("LOGIN REQUEST")
-        logger.info("=" * 80)
-        
-        if not request.is_json:
-            logger.error(f"Not JSON. Content-Type: {request.content_type}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Content-Type must be application/json'
-            }), 400
-        
-        data = request.get_json()
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        
-        logger.info(f"Login attempt: {email}")
-        
-        if not email or not password:
-            logger.warning("Missing email or password")
-            return jsonify({
-                'status': 'error',
-                'message': 'Email and password required'
-            }), 400
-        
-        if not MONGODB_ENABLED:
-            logger.error("MongoDB is not enabled")
-            return jsonify({
-                'status': 'error',
-                'message': 'Database not configured'
-            }), 503
-        
-        # Find user
-        logger.info(f"Finding user: {email}")
-        try:
-            user = User.find_by_email(email)
-            if not user:
-                logger.warning(f"User not found: {email}")
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Invalid credentials'
-                }), 401
-            logger.info("User found")
-        except Exception as e:
-            logger.error(f"Database error finding user: {str(e)}")
-            logger.error(traceback.format_exc())
-            return jsonify({
-                'status': 'error',
-                'message': f'Database error: {str(e)}'
-            }), 503
-        
-        # Verify password
-        logger.info("Verifying password...")
-        try:
-            if not verify_password(password, user.get('password_hash')):
-                logger.warning(f"Invalid password for: {email}")
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Invalid credentials'
-                }), 401
-            logger.info("Password verified")
-        except Exception as e:
-            logger.error(f"Password verification error: {str(e)}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Password verification failed'
-            }), 500
-        
-        # Generate token
-        logger.info("Generating token...")
-        try:
-            token = generate_jwt_token(str(user['_id']), email)
-            logger.info("Token generated")
-        except Exception as e:
-            logger.error(f"Token generation error: {str(e)}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Token generation failed'
-            }), 500
-        
-        logger.info("✅ LOGIN SUCCESSFUL")
-        logger.info("=" * 80)
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Login successful',
-            'token': token,
-            'user': {
-                'id': str(user['_id']),
-                'email': user['email'],
-                'profile': user.get('profile', {})
-            }
-        }), 200
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
     
-    except Exception as e:
-        logger.error("=" * 80)
-        logger.error(f"❌ UNEXPECTED ERROR: {str(e)}")
-        logger.error(traceback.format_exc())
-        logger.error("=" * 80)
-        
-        return jsonify({
-            'status': 'error',
-            'message': 'Server error during login'
-        }), 500
+    if not email or not password:
+        return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
+    
+    # Find user
+    user = User.find_by_email(email)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
+    
+    # Verify password
+    if not verify_password(password, user['password_hash']):
+        return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
+    
+    # Generate JWT token
+    token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Login successful',
+        'token': token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
+
+@app.route('/auth/magic-link', methods=['POST'])
+def request_magic_link():
+    """Request a magic link for passwordless login"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'status': 'error', 'message': 'Email is required'}), 400
+    
+    # Check if user exists, if not create a new user
+    user = User.find_by_email(email)
+    if not user:
+        # Auto-create user for magic link
+        password_hash = hash_password(secrets.token_urlsafe(32))  # Random password
+        user = User.create(email, password_hash)
+    
+    # Generate magic link token
+    token = generate_magic_link_token(email)
+    
+    # Send email
+    send_magic_link_email(email, token)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Magic link sent to your email',
+        'dev_token': token if not os.getenv('SMTP_USER') else None  # Only in dev mode
+    })
+
+@app.route('/auth/verify-magic', methods=['POST'])
+def verify_magic():
+    """Verify magic link token and log in"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    token = data.get('token', '')
+    
+    if not token:
+        return jsonify({'status': 'error', 'message': 'Token is required'}), 400
+    
+    # Verify token
+    email = verify_magic_link_token(token)
+    if not email:
+        return jsonify({'status': 'error', 'message': 'Invalid or expired token'}), 401
+    
+    # Find user
+    user = User.find_by_email(email)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    # Generate JWT token
+    jwt_token = generate_jwt_token(user['_id'], email)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Login successful',
+        'token': jwt_token,
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
 
 @app.route('/auth/me', methods=['GET'])
 @token_required
 def get_current_user():
-    """Get current user"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Database not configured'}), 503
-        
-        user = User.find_by_id(request.current_user['user_id'])
-        if not user:
-            return jsonify({'status': 'error', 'message': 'User not found'}), 404
-        
-        return jsonify({
-            'status': 'success',
-            'user': {
-                'id': str(user['_id']),
-                'email': user['email'],
-                'profile': user.get('profile', {})
-            }
-        }), 200
-    except Exception as e:
-        logger.error(f"Get user error: {e}")
-        return jsonify({'status': 'error', 'message': 'Server error'}), 500
+    """Get current user info"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    user = User.find_by_id(request.current_user['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    return jsonify({
+        'status': 'success',
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
 
 @app.route('/auth/profile', methods=['PUT'])
 @token_required
 def update_profile():
-    """Update profile"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Database not configured'}), 503
-        
-        data = request.get_json()
-        profile = data.get('profile', {})
-        
-        user = User.update_profile(request.current_user['user_id'], profile)
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Profile updated',
-            'user': {
-                'id': str(user['_id']),
-                'email': user['email'],
-                'profile': user.get('profile', {})
-            }
-        }), 200
-    except Exception as e:
-        logger.error(f"Profile update error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed to update profile'}), 500
+    """Update user profile"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    profile = data.get('profile', {})
+    
+    user = User.update_profile(request.current_user['user_id'], profile)
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Profile updated successfully',
+        'user': {
+            'id': str(user['_id']),
+            'email': user['email'],
+            'profile': user['profile']
+        }
+    })
 
 # ============================================================================
 # WARDROBE ENDPOINTS
@@ -1081,236 +893,283 @@ def update_profile():
 @app.route('/wardrobe/items', methods=['GET'])
 @token_required
 def get_wardrobe_items():
-    """Get wardrobe items"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        category = request.args.get('category')
-        owned = request.args.get('owned')
-        
-        filters = {}
-        if category:
-            filters['category'] = category
-        if owned:
-            filters['owned'] = owned.lower() == 'true'
-        
-        items = WardrobeItem.get_user_wardrobe(request.current_user['user_id'], filters)
-        
-        for item in items:
-            item['_id'] = str(item['_id'])
-            item['user_id'] = str(item['user_id'])
-        
-        return jsonify({
-            'status': 'success',
-            'items': items,
-            'count': len(items)
-        }), 200
-    except Exception as e:
-        logger.error(f"Get wardrobe error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Get all wardrobe items for the current user"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    category = request.args.get('category')
+    owned = request.args.get('owned')
+    occasion = request.args.get('occasion')
+    
+    filters = {}
+    if category:
+        filters['category'] = category
+    if owned is not None:
+        filters['owned'] = owned.lower() == 'true'
+    if occasion:
+        filters['occasion'] = occasion
+    
+    items = WardrobeItem.get_user_wardrobe(request.current_user['user_id'], filters)
+    
+    # Convert ObjectId to string
+    for item in items:
+        item['_id'] = str(item['_id'])
+        item['user_id'] = str(item['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'items': items,
+        'count': len(items)
+    })
 
 @app.route('/wardrobe/add', methods=['POST'])
 @token_required
 def add_wardrobe_item():
-    """Add wardrobe item"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        data = request.get_json()
-        item = WardrobeItem.create(request.current_user['user_id'], data)
-        
-        item['_id'] = str(item['_id'])
-        item['user_id'] = str(item['user_id'])
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Item added',
-            'item': item
-        }), 201
-    except Exception as e:
-        logger.error(f"Add item error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Add an item to the wardrobe"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    
+    item = WardrobeItem.create(request.current_user['user_id'], data)
+    
+    item['_id'] = str(item['_id'])
+    item['user_id'] = str(item['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Item added to wardrobe',
+        'item': item
+    }), 201
+
+@app.route('/wardrobe/mark-owned/<item_id>', methods=['PUT'])
+@token_required
+def mark_item_owned(item_id):
+    """Mark an item as owned or not owned"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    data = request.get_json()
+    owned = data.get('owned', True)
+    
+    WardrobeItem.mark_owned(item_id, owned)
+    
+    return jsonify({
+        'status': 'success',
+        'message': f'Item marked as {"owned" if owned else "not owned"}'
+    })
 
 @app.route('/wardrobe/remove/<item_id>', methods=['DELETE'])
 @token_required
 def remove_wardrobe_item(item_id):
-    """Remove item"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        WardrobeItem.remove_item(item_id, request.current_user['user_id'])
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Item removed'
-        }), 200
-    except Exception as e:
-        logger.error(f"Remove error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Remove an item from the wardrobe"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    WardrobeItem.remove_item(item_id, request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Item removed from wardrobe'
+    })
 
 @app.route('/wardrobe/stats', methods=['GET'])
 @token_required
 def get_wardrobe_stats():
-    """Get stats"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        stats = WardrobeItem.get_wardrobe_stats(request.current_user['user_id'])
-        return jsonify({'status': 'success', 'stats': stats}), 200
-    except Exception as e:
-        logger.error(f"Stats error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Get wardrobe statistics"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    stats = WardrobeItem.get_wardrobe_stats(request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'stats': stats
+    })
 
 # ============================================================================
-# INSIGHTS ENDPOINTS
+# INSIGHTS ENDPOINTS (KILLER FEATURE)
 # ============================================================================
 
 @app.route('/insights/gaps', methods=['GET'])
 @token_required
 def get_wardrobe_gaps():
-    """Get gaps"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        user = User.find_by_id(request.current_user['user_id'])
-        if not user:
-            return jsonify({'status': 'error', 'message': 'User not found'}), 404
-        
-        gaps = analyze_wardrobe_gaps(request.current_user['user_id'], user.get('profile', {}))
-        
-        for gap in gaps:
-            query = gap.get('shopping_query', gap.get('item_name', ''))
-            encoded = quote_plus(query)
-            gap['shopping_links'] = {
-                'amazon': f"https://www.amazon.in/s?k={encoded}",
-                'flipkart': f"https://www.flipkart.com/search?q={encoded}",
-                'meesho': f"https://www.meesho.com/search?q={encoded}"
-            }
-        
-        return jsonify({'status': 'success', 'gaps': gaps, 'count': len(gaps)}), 200
-    except Exception as e:
-        logger.error(f"Gaps error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Get wardrobe gap analysis - KILLER FEATURE"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    user = User.find_by_id(request.current_user['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+    
+    # Analyze gaps
+    gaps = analyze_wardrobe_gaps(request.current_user['user_id'], user['profile'])
+    
+    # Add shopping links to each gap
+    for gap in gaps:
+        query = gap.get('shopping_query', gap.get('item_name', ''))
+        encoded_query = quote_plus(query)
+        gap['shopping_links'] = {
+            'amazon': f"https://www.amazon.in/s?k={encoded_query}",
+            'flipkart': f"https://www.flipkart.com/search?q={encoded_query}",
+            'meesho': f"https://www.meesho.com/search?q={encoded_query}",
+            'myntra': f"https://www.myntra.com/{encoded_query}"
+        }
+    
+    return jsonify({
+        'status': 'success',
+        'gaps': gaps,
+        'count': len(gaps)
+    })
 
 @app.route('/insights/balance', methods=['GET'])
 @token_required
 def get_wardrobe_balance():
-    """Get balance"""
-    try:
-        if not MONGODB_ENABLED:
-            return jsonify({'status': 'error', 'message': 'Feature unavailable'}), 503
-        
-        balance = calculate_wardrobe_balance(request.current_user['user_id'])
-        return jsonify({'status': 'success', 'balance': balance}), 200
-    except Exception as e:
-        logger.error(f"Balance error: {e}")
-        return jsonify({'status': 'error', 'message': 'Failed'}), 500
+    """Get wardrobe balance metrics"""
+    if not MONGODB_ENABLED:
+        return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
+    
+    balance = calculate_wardrobe_balance(request.current_user['user_id'])
+    
+    return jsonify({
+        'status': 'success',
+        'balance': balance
+    })
 
 # ============================================================================
-# PREDICTION ENDPOINT
+# EXISTING ENDPOINTS (Enhanced with user context)
 # ============================================================================
 
 @app.route('/', methods=['GET'])
 def index():
-    """API info"""
     return jsonify({
-        "status": "running",
-        "message": "AI Fashion Stylist API v2.3",
-        "mongodb": MONGODB_ENABLED
-    }), 200
+        "status": "running", 
+        "message": "Fashion Recommendation API is active",
+        "version": "2.0",
+        "features": {
+            "guest_mode": True,
+            "user_accounts": MONGODB_ENABLED,
+            "digital_wardrobe": MONGODB_ENABLED,
+            "wardrobe_intelligence": MONGODB_ENABLED
+        }
+    })
 
 @app.route('/predict', methods=['POST'])
+
 def predict():
-    """Get predictions"""
-    try:
-        if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image"}), 400
-
-        file = request.files['image']
-        if not file.filename:
-            return jsonify({"status": "error", "message": "No file"}), 400
-
-        if not allowed_file(file.filename):
-            return jsonify({"status": "error", "message": "Invalid type"}), 400
-
-        occasion = request.form.get('occasion', 'casual')
-        climate = request.form.get('climate', 'moderate')
-        clothing_style = request.form.get('clothing_style', 'unisex')
-        age_group = request.form.get('age_group', 'young')
-        body_type = request.form.get('body_type', 'regular')
-        budget = request.form.get('budget', 'medium')
-
-        matching = rank_and_filter_outfits(
-            occasion, climate, clothing_style, age_group, body_type, budget
+    """Generate outfit recommendations (works with or without authentication)"""
+    if 'image' not in request.files:
+        return jsonify({"status": "error", "message": "No image file provided"}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"status": "error", "message": "No file selected"}), 400
+    if not allowed_file(file.filename):
+        return jsonify({"status": "error", "message": "Invalid file type"}), 400
+    
+    occasion = request.form.get('occasion', 'casual')
+    occasion_subtype = request.form.get('occasion_subtype', '')
+    climate = request.form.get('climate', 'moderate')
+    clothing_style = request.form.get('clothing_style', 'unisex')
+    age_group = request.form.get('age_group', 'young')
+    body_type = request.form.get('body_type', 'regular')
+    budget = request.form.get('budget', 'medium')
+    detect_face = request.form.get('detect_face', 'false').lower() == 'true'
+    skin_tone = request.form.get('skin_tone', '')
+    undertone = request.form.get('undertone', '')
+    
+    # If user is authenticated, use their profile preferences
+    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+        user = User.find_by_id(request.current_user['user_id'])
+        if user and user.get('profile'):
+            profile = user['profile']
+            body_type = profile.get('body_type', body_type)
+            budget = profile.get('budget_preference', budget)
+            age_group = profile.get('age_group', age_group)
+            skin_tone = profile.get('skin_tone', skin_tone)
+            undertone = profile.get('undertone', undertone)
+    
+    if occasion not in ['casual', 'formal', 'party', 'ethnic']:
+        occasion = 'casual'
+    if climate not in ['hot', 'moderate', 'cold']:
+        climate = 'moderate'
+    if clothing_style not in ['mens', 'womens', 'unisex']:
+        clothing_style = 'unisex'
+    if age_group not in ['young', 'adult', 'senior']:
+        age_group = 'young'
+    if body_type not in ['slim', 'regular', 'relaxed']:
+        body_type = 'regular'
+    if budget not in ['low', 'medium', 'high']:
+        budget = 'medium'
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
+    
+    matching_outfits = rank_and_filter_outfits(
+        occasion, climate, clothing_style, age_group, body_type, budget, 
+        occasion_subtype if occasion_subtype else None
+    )
+    
+    result_outfits = []
+    for outfit in matching_outfits:
+        outfit_copy = outfit.copy()
+        outfit_gender = outfit.get("gender", "unisex")
+        outfit_budget = outfit.get("budget", "medium")
+        outfit_occasion = outfit.get("occasion", "casual")
+        outfit_subtype = occasion_subtype if occasion_subtype in outfit.get("occasion_subtype", []) else None
+        
+        outfit_copy["shopping_links"] = generate_shopping_links(
+            outfit["items"], 
+            outfit_gender, 
+            outfit_budget, 
+            outfit_occasion,
+            outfit_subtype
         )
-
-        result_outfits = []
-        for outfit in matching:
-            outfit_copy = outfit.copy()
-            outfit_copy["shopping_links"] = generate_shopping_links(
-                outfit["items"],
-                outfit.get("gender", "unisex"),
-                outfit.get("budget", "medium"),
-                outfit.get("occasion", "casual")
-            )
-            result_outfits.append(outfit_copy)
-
-        tips = generate_care_routines(clothing_style, climate, occasion)
-
-        return jsonify({
-            "status": "success",
-            "prediction": {
-                "confidence": 0.95,
-                "clothing_type": "Uploaded Garment",
-                "outfits": result_outfits,
-                "style_tips": tips
-            }
-        }), 200
-
-    except Exception as e:
-        logger.error(f"Predict error: {e}\n{traceback.format_exc()}")
-        return jsonify({"status": "error", "message": "Failed"}), 500
-
-# ============================================================================
-# ERROR HANDLERS
-# ============================================================================
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'status': 'error', 'message': 'Not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    logger.error(f"500: {error}\n{traceback.format_exc()}")
-    return jsonify({'status': 'error', 'message': 'Server error'}), 500
-
-# ============================================================================
-# APPLICATION STARTUP
-# ============================================================================
+        outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
+        
+        # Add wardrobe context if user is authenticated
+        if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+            outfit_copy["in_wardrobe"] = False  # Can be enhanced to check actual wardrobe
+        
+        result_outfits.append(outfit_copy)
+    
+    style_tips = generate_care_routines(
+        clothing_style, 
+        climate, 
+        occasion, 
+        skin_tone if skin_tone else None,
+        undertone if undertone else None,
+        detect_face
+    )
+    
+    response_data = {
+        "status": "success",
+        "prediction": {
+            "confidence": 0.95,
+            "clothing_type": "Uploaded Garment",
+            "outfits": result_outfits,
+            "style_tips": style_tips
+        }
+    }
+    
+    # Add wardrobe insights if user is authenticated
+    if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
+        response_data["user_context"] = {
+            "authenticated": True,
+            "has_wardrobe": True
+        }
+    
+    return jsonify(response_data)
 
 if __name__ == '__main__':
+    # Use PORT from environment or default to 5000
     port = int(os.environ.get("PORT", 5000))
-    
-    logger.info("=" * 80)
-    logger.info(f"Starting API on port {port}")
-    logger.info(f"MongoDB: {'ENABLED' if MONGODB_ENABLED else 'DISABLED'}")
-    logger.info("=" * 80)
     
     if MONGODB_ENABLED:
         try:
+            # Attempt a quick init but don't crash if DB is down at startup
             init_db()
-            logger.info("✅ Database ready")
         except Exception as e:
-            logger.warning(f"⚠️ DB init: {e}")
-    
-    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
-
-
-
-
-
+            print(f"Startup DB initialization warning: {e}")
+            
+    app.run(debug=True, host='0.0.0.0', port=port)
