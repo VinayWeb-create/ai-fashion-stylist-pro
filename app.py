@@ -1170,6 +1170,6 @@ if __name__ == '__main__':
             # Attempt a quick init but don't crash if DB is down at startup
             init_db()
         except Exception as e:
-            print(f"Startup DB initialization warning: {e}")
+            print(f"Index creation error: {e}")
             
     app.run(debug=True, host='0.0.0.0', port=port)
