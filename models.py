@@ -327,4 +327,3 @@ class WardrobeInsights:
         except Exception as e:
             logger.error(f"❌ Get insights error: {e}")
             raise
-
