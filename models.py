@@ -18,9 +18,19 @@ client = MongoClient(
 db = client[Config.DATABASE_NAME]
 
 # Collections
-users_collection = db['users']
-wardrobe_collection = db['wardrobe']
-insights_collection = db['insights']
+try:
+    print("DEBUG: Assigning collections...", flush=True)
+    users_collection = db['users']
+    wardrobe_collection = db['wardrobe']
+    insights_collection = db['insights']
+    print("DEBUG: Collections assigned successfully", flush=True)
+except Exception as e:
+    print(f"DEBUG: Error assigning collections at top level: {e}", flush=True)
+    import traceback
+    traceback.print_exc()
+    users_collection = None
+    wardrobe_collection = None
+    insights_collection = None
 
 # Database initialization flag
 _db_initialized = False
@@ -52,7 +62,9 @@ def init_db():
         _db_initialized = True
         print("DEBUG: Database indexes created successfully", flush=True)
     except Exception as e:
+        import traceback
         print(f"DEBUG: Error inside models.py init_db: {e}", flush=True)
+        traceback.print_exc()
 
 class User:
     """User model for authentication and profile"""
