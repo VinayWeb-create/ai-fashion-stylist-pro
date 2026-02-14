@@ -1055,7 +1055,7 @@ def index():
     })
 
 @app.route('/predict', methods=['POST'])
-
+@optional_token
 def predict():
     """Generate outfit recommendations (works with or without authentication)"""
     if 'image' not in request.files:
