@@ -67,7 +67,12 @@ def save_json_file(filepath, data):
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
 
+# ============================================================================
+# EXPANDED OUTFIT DATABASE - 63 Premium Outfits
+# ============================================================================
+
 OUTFIT_DATABASE = [
+    # Original 20 outfits
     {
         "id": "outfit_001",
         "name": "Classic Casual Denim",
@@ -467,6 +472,871 @@ OUTFIT_DATABASE = [
         "season": ["spring", "summer", "fall", "winter"],
         "description": "Traditional festive attire for men",
         "reasoning": "Perfect blend of tradition and contemporary style"
+    },
+    
+    # =========================================================================
+    # NEW EXPANDED OUTFITS (021-063)
+    # =========================================================================
+    
+    {
+        "id": "outfit_021",
+        "name": "Street Style Bomber",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Black Bomber Jacket", "White T-Shirt", "Black Skinny Jeans", "White Sneakers"],
+        "colors": ["Black", "White"],
+        "accessories": ["Baseball Cap", "Minimalist Watch"],
+        "footwear": "White Sneakers",
+        "budget": "medium",
+        "brands": ["Zara", "H&M", "Adidas"],
+        "style_tags": ["streetwear", "urban", "trendy"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Modern street style with bomber jacket",
+        "reasoning": "Trendy urban look perfect for college students and young adults"
+    },
+    {
+        "id": "outfit_022",
+        "name": "Preppy Campus Look",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
+        "climate": ["moderate"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Oxford Shirt", "Khaki Chinos", "Boat Shoes", "Sweater"],
+        "colors": ["Light Blue", "Khaki", "Navy"],
+        "accessories": ["Leather Belt", "Canvas Backpack"],
+        "footwear": "Boat Shoes",
+        "budget": "medium",
+        "brands": ["Gant", "Tommy Hilfiger", "Sperry"],
+        "style_tags": ["preppy", "collegiate", "smart-casual"],
+        "season": ["spring", "fall"],
+        "description": "Classic preppy style for campus",
+        "reasoning": "Timeless college look that's both comfortable and put-together"
+    },
+    {
+        "id": "outfit_023",
+        "name": "Athleisure Comfort",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "travel"],
+        "climate": ["moderate", "hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Track Jacket", "Athletic T-Shirt", "Joggers", "Running Shoes"],
+        "colors": ["Grey", "Black", "Navy"],
+        "accessories": ["Sports Watch", "Gym Bag"],
+        "footwear": "Running Shoes",
+        "budget": "low",
+        "brands": ["Nike", "Adidas", "Puma"],
+        "style_tags": ["athleisure", "sporty", "comfortable"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Comfortable athleisure for everyday wear",
+        "reasoning": "Perfect blend of athletic wear and casual style"
+    },
+    {
+        "id": "outfit_024",
+        "name": "Minimalist Monochrome",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "college"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Black Turtleneck", "Grey Wool Pants", "Black Chelsea Boots"],
+        "colors": ["Black", "Grey"],
+        "accessories": ["Silver Chain", "Minimalist Watch"],
+        "footwear": "Chelsea Boots",
+        "budget": "medium",
+        "brands": ["COS", "Uniqlo", "Zara"],
+        "style_tags": ["minimalist", "modern", "sophisticated"],
+        "season": ["fall", "winter"],
+        "description": "Sleek minimalist aesthetic",
+        "reasoning": "Clean, modern look with emphasis on silhouette and texture"
+    },
+    {
+        "id": "outfit_025",
+        "name": "Denim on Denim",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "travel"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Light Denim Jacket", "White Henley", "Dark Denim Jeans", "Brown Boots"],
+        "colors": ["Light Blue", "White", "Dark Blue", "Brown"],
+        "accessories": ["Leather Bracelet", "Aviator Sunglasses"],
+        "footwear": "Brown Boots",
+        "budget": "medium",
+        "brands": ["Levis", "Wrangler", "Diesel"],
+        "style_tags": ["denim", "rugged", "classic"],
+        "season": ["spring", "fall"],
+        "description": "Classic double denim done right",
+        "reasoning": "Timeless denim combination with contrasting shades"
+    },
+    {
+        "id": "outfit_026",
+        "name": "Beach Vacation Casual",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["travel", "daily"],
+        "climate": ["hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Linen Shirt", "Cotton Shorts", "Flip Flops"],
+        "colors": ["White", "Beige", "Tan"],
+        "accessories": ["Straw Hat", "Sunglasses", "Beach Bag"],
+        "footwear": "Flip Flops",
+        "budget": "low",
+        "brands": ["Uniqlo", "Gap", "Old Navy"],
+        "style_tags": ["vacation", "breezy", "relaxed"],
+        "season": ["summer"],
+        "description": "Ultimate beach and resort wear",
+        "reasoning": "Light, breathable fabrics perfect for tropical destinations"
+    },
+    {
+        "id": "outfit_027",
+        "name": "Flannel Lumberjack",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "college"],
+        "climate": ["cold", "moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["regular", "relaxed"],
+        "items": ["Plaid Flannel Shirt", "Grey T-Shirt", "Dark Jeans", "Work Boots"],
+        "colors": ["Red", "Black", "Grey", "Brown"],
+        "accessories": ["Beanie", "Backpack"],
+        "footwear": "Work Boots",
+        "budget": "low",
+        "brands": ["Carhartt", "Dickies", "Timberland"],
+        "style_tags": ["rugged", "outdoorsy", "casual"],
+        "season": ["fall", "winter"],
+        "description": "Rugged outdoor-inspired style",
+        "reasoning": "Warm, practical, and effortlessly stylish"
+    },
+    {
+        "id": "outfit_028",
+        "name": "Smart Casual Weekend",
+        "gender": "mens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily"],
+        "climate": ["moderate"],
+        "age_group": ["adult"],
+        "body_type": ["regular", "relaxed"],
+        "items": ["Knit Polo", "Tailored Shorts", "Loafers"],
+        "colors": ["Navy", "Beige", "Brown"],
+        "accessories": ["Leather Watch", "Sunglasses"],
+        "footwear": "Loafers",
+        "budget": "medium",
+        "brands": ["Lacoste", "Ralph Lauren", "Brooks Brothers"],
+        "style_tags": ["smart-casual", "refined", "weekend"],
+        "season": ["spring", "summer"],
+        "description": "Elevated casual for weekend outings",
+        "reasoning": "Polished yet relaxed for social occasions"
+    },
+    {
+        "id": "outfit_029",
+        "name": "Tech Industry Professional",
+        "gender": "mens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Dark Blazer", "Premium T-Shirt", "Dark Jeans", "Minimalist Sneakers"],
+        "colors": ["Black", "Grey", "Navy"],
+        "accessories": ["Apple Watch", "Laptop Bag"],
+        "footwear": "Minimalist Sneakers",
+        "budget": "medium",
+        "brands": ["Everlane", "Theory", "Common Projects"],
+        "style_tags": ["tech", "modern", "smart-casual"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Modern tech professional attire",
+        "reasoning": "Silicon Valley meets sophistication"
+    },
+    {
+        "id": "outfit_030",
+        "name": "Classic Three-Piece Suit",
+        "gender": "mens",
+        "occasion": "formal",
+        "occasion_subtype": ["interview", "meeting", "office"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["adult", "senior"],
+        "body_type": ["slim", "regular"],
+        "items": ["Charcoal Suit", "White Dress Shirt", "Vest", "Leather Oxford", "Silk Tie"],
+        "colors": ["Charcoal", "White", "Burgundy"],
+        "accessories": ["Pocket Square", "Cufflinks", "Leather Belt"],
+        "footwear": "Leather Oxford",
+        "budget": "high",
+        "brands": ["Hugo Boss", "Armani", "Canali"],
+        "style_tags": ["formal", "executive", "powerful"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Power dressing with three-piece sophistication",
+        "reasoning": "Maximum professionalism for high-stakes situations"
+    },
+    {
+        "id": "outfit_031",
+        "name": "Summer Business Casual",
+        "gender": "mens",
+        "occasion": "formal",
+        "occasion_subtype": ["office"],
+        "climate": ["hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Linen Blazer", "Cotton Shirt", "Chinos", "Loafers"],
+        "colors": ["Beige", "Light Blue", "Khaki"],
+        "accessories": ["Woven Belt", "Sunglasses"],
+        "footwear": "Loafers",
+        "budget": "medium",
+        "brands": ["Massimo Dutti", "Banana Republic", "J.Crew"],
+        "style_tags": ["business-casual", "summer", "breathable"],
+        "season": ["summer"],
+        "description": "Professional yet comfortable for hot weather",
+        "reasoning": "Breathable fabrics maintain professionalism in heat"
+    },
+    {
+        "id": "outfit_032",
+        "name": "Creative Professional",
+        "gender": "mens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Patterned Blazer", "Black Turtleneck", "Dark Trousers", "Monk Strap Shoes"],
+        "colors": ["Navy Pattern", "Black", "Grey"],
+        "accessories": ["Designer Watch", "Leather Briefcase"],
+        "footwear": "Monk Strap Shoes",
+        "budget": "high",
+        "brands": ["Ted Baker", "Paul Smith", "Reiss"],
+        "style_tags": ["creative", "fashion-forward", "sophisticated"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Fashion-forward professional attire",
+        "reasoning": "Expresses creativity while maintaining professionalism"
+    },
+    {
+        "id": "outfit_033",
+        "name": "Banking & Finance Formal",
+        "gender": "mens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting", "interview"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["adult", "senior"],
+        "body_type": ["regular", "relaxed"],
+        "items": ["Navy Pinstripe Suit", "White Dress Shirt", "Conservative Tie", "Cap-toe Oxford"],
+        "colors": ["Navy", "White", "Red"],
+        "accessories": ["Leather Belt", "Classic Watch", "Briefcase"],
+        "footwear": "Cap-toe Oxford",
+        "budget": "high",
+        "brands": ["Brooks Brothers", "Ralph Lauren", "Brioni"],
+        "style_tags": ["conservative", "formal", "traditional"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Traditional banking attire",
+        "reasoning": "Conservative elegance for financial sectors"
+    },
+    {
+        "id": "outfit_034",
+        "name": "Black Tie Tuxedo",
+        "gender": "mens",
+        "occasion": "party",
+        "occasion_subtype": ["wedding", "night"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["young", "adult", "senior"],
+        "body_type": ["slim", "regular"],
+        "items": ["Black Tuxedo", "White Dress Shirt", "Bow Tie", "Patent Leather Shoes"],
+        "colors": ["Black", "White"],
+        "accessories": ["Cufflinks", "Pocket Square", "Cummerbund"],
+        "footwear": "Patent Leather Shoes",
+        "budget": "high",
+        "brands": ["Giorgio Armani", "Tom Ford", "Hugo Boss"],
+        "style_tags": ["black-tie", "formal", "elegant"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Classic black tie elegance",
+        "reasoning": "Timeless sophistication for formal events"
+    },
+    {
+        "id": "outfit_035",
+        "name": "Cocktail Party Smart",
+        "gender": "mens",
+        "occasion": "party",
+        "occasion_subtype": ["night", "festival"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Velvet Blazer", "Black Dress Shirt", "Dark Jeans", "Chelsea Boots"],
+        "colors": ["Burgundy", "Black"],
+        "accessories": ["Statement Watch", "Pocket Square"],
+        "footwear": "Chelsea Boots",
+        "budget": "medium",
+        "brands": ["Zara", "Topman", "ASOS"],
+        "style_tags": ["cocktail", "stylish", "night-out"],
+        "season": ["fall", "winter"],
+        "description": "Stylish cocktail party attire",
+        "reasoning": "Balances formality with personality"
+    },
+    {
+        "id": "outfit_036",
+        "name": "Festival Streetwear",
+        "gender": "mens",
+        "occasion": "party",
+        "occasion_subtype": ["festival"],
+        "climate": ["hot", "moderate"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Graphic Band T-Shirt", "Ripped Jeans", "High-top Sneakers", "Denim Jacket"],
+        "colors": ["Black", "Vintage Wash", "White"],
+        "accessories": ["Festival Wristbands", "Sunglasses", "Crossbody Bag"],
+        "footwear": "High-top Sneakers",
+        "budget": "low",
+        "brands": ["Urban Outfitters", "Pull&Bear", "Converse"],
+        "style_tags": ["festival", "edgy", "youthful"],
+        "season": ["spring", "summer"],
+        "description": "Edgy festival-ready outfit",
+        "reasoning": "Comfortable yet statement-making for music festivals"
+    },
+    {
+        "id": "outfit_037",
+        "name": "Wedding Guest Summer",
+        "gender": "mens",
+        "occasion": "party",
+        "occasion_subtype": ["wedding"],
+        "climate": ["hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Light Grey Suit", "Pastel Shirt", "Brown Leather Shoes"],
+        "colors": ["Light Grey", "Pastel Blue", "Brown"],
+        "accessories": ["Sunglasses", "Watch"],
+        "footwear": "Brown Leather Shoes",
+        "budget": "medium",
+        "brands": ["Suit Supply", "Charles Tyrwhitt", "Clarks"],
+        "style_tags": ["wedding", "summer", "elegant-casual"],
+        "season": ["summer"],
+        "description": "Summer wedding guest attire",
+        "reasoning": "Elegant yet breathable for outdoor ceremonies"
+    },
+    {
+        "id": "outfit_038",
+        "name": "Classic Kurta Pajama",
+        "gender": "mens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["traditional", "festive"],
+        "climate": ["moderate", "hot"],
+        "age_group": ["young", "adult", "senior"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Cotton Kurta", "Churidar Pajama", "Ethnic Mojari"],
+        "colors": ["White", "Cream", "Gold"],
+        "accessories": ["Ethnic Watch", "Shawl"],
+        "footwear": "Ethnic Mojari",
+        "budget": "medium",
+        "brands": ["Manyavar", "Fabindia", "Ethnix"],
+        "style_tags": ["traditional", "ethnic", "comfortable"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Traditional Indian comfort",
+        "reasoning": "Classic ethnic wear suitable for festivals and family gatherings"
+    },
+    {
+        "id": "outfit_039",
+        "name": "Royal Sherwani",
+        "gender": "mens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["festive"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Embroidered Sherwani", "Churidar", "Ethnic Jutis", "Turban"],
+        "colors": ["Maroon", "Gold", "Cream"],
+        "accessories": ["Brooch", "Sherwani Buttons", "Stole"],
+        "footwear": "Ethnic Jutis",
+        "budget": "high",
+        "brands": ["Manyavar", "Raymond Ethnix", "Sabyasachi"],
+        "style_tags": ["royal", "festive", "luxurious"],
+        "season": ["fall", "winter"],
+        "description": "Regal ethnic grandeur",
+        "reasoning": "Perfect for weddings and major celebrations"
+    },
+    {
+        "id": "outfit_040",
+        "name": "Contemporary Nehru Jacket",
+        "gender": "mens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["festive", "traditional"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Nehru Jacket", "White Kurta", "Straight Pants", "Leather Jutis"],
+        "colors": ["Navy", "White", "Black"],
+        "accessories": ["Pocket Square", "Watch"],
+        "footwear": "Leather Jutis",
+        "budget": "medium",
+        "brands": ["Fabindia", "AND Designs", "Peter England Elite"],
+        "style_tags": ["contemporary", "fusion", "sophisticated"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Modern ethnic fusion",
+        "reasoning": "Blend of traditional and contemporary styling"
+    },
+    {
+        "id": "outfit_041",
+        "name": "Casual Denim & Tee",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "college"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Graphic T-Shirt", "High-Waisted Jeans", "White Sneakers"],
+        "colors": ["White", "Blue", "Various"],
+        "accessories": ["Crossbody Bag", "Hoop Earrings"],
+        "footwear": "White Sneakers",
+        "budget": "low",
+        "brands": ["Zara", "Forever 21", "H&M"],
+        "style_tags": ["casual", "effortless", "everyday"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Classic casual comfort",
+        "reasoning": "Timeless and versatile for everyday wear"
+    },
+    {
+        "id": "outfit_042",
+        "name": "Boho Chic Maxi",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "travel"],
+        "climate": ["hot", "moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Flowy Maxi Dress", "Sandals", "Denim Jacket"],
+        "colors": ["Floral Print", "Earth Tones"],
+        "accessories": ["Layered Necklaces", "Floppy Hat", "Tote Bag"],
+        "footwear": "Sandals",
+        "budget": "medium",
+        "brands": ["Free People", "Anthropologie", "Mango"],
+        "style_tags": ["boho", "free-spirited", "feminine"],
+        "season": ["spring", "summer"],
+        "description": "Bohemian elegance",
+        "reasoning": "Effortlessly stylish and comfortable"
+    },
+    {
+        "id": "outfit_043",
+        "name": "Athleisure Chic",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "college"],
+        "climate": ["moderate", "hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Sports Bra", "Leggings", "Oversized Hoodie", "Running Shoes"],
+        "colors": ["Black", "Grey", "White"],
+        "accessories": ["Smartwatch", "Gym Bag"],
+        "footwear": "Running Shoes",
+        "budget": "low",
+        "brands": ["Lululemon", "Athleta", "Nike"],
+        "style_tags": ["athleisure", "comfortable", "sporty"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Athletic meets casual",
+        "reasoning": "Perfect blend of comfort and style"
+    },
+    {
+        "id": "outfit_044",
+        "name": "Preppy Skirt Set",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
+        "climate": ["moderate"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Knit Sweater", "Pleated Mini Skirt", "Mary Jane Shoes"],
+        "colors": ["Cream", "Plaid Pattern", "Black"],
+        "accessories": ["Headband", "Small Handbag"],
+        "footwear": "Mary Jane Shoes",
+        "budget": "medium",
+        "brands": ["Brandy Melville", "Urban Outfitters", "Princess Polly"],
+        "style_tags": ["preppy", "youthful", "school-chic"],
+        "season": ["fall", "spring"],
+        "description": "Classic collegiate preppy",
+        "reasoning": "Sweet and polished campus style"
+    },
+    {
+        "id": "outfit_045",
+        "name": "Minimalist Capsule",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["White Button-Up", "Black Wide-Leg Pants", "Mules"],
+        "colors": ["White", "Black"],
+        "accessories": ["Gold Jewelry", "Structured Bag"],
+        "footwear": "Mules",
+        "budget": "medium",
+        "brands": ["COS", "Everlane", "Arket"],
+        "style_tags": ["minimalist", "timeless", "elegant"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Effortless minimalism",
+        "reasoning": "Clean lines and neutral palette"
+    },
+    {
+        "id": "outfit_046",
+        "name": "Summer Beach Cover",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["travel", "daily"],
+        "climate": ["hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Crochet Cover-Up", "Bikini", "Slide Sandals"],
+        "colors": ["White", "Beige", "Colorful Swimwear"],
+        "accessories": ["Beach Hat", "Oversized Sunglasses", "Beach Bag"],
+        "footwear": "Slide Sandals",
+        "budget": "low",
+        "brands": ["H&M", "Target", "Aerie"],
+        "style_tags": ["beach", "vacation", "relaxed"],
+        "season": ["summer"],
+        "description": "Perfect beach day outfit",
+        "reasoning": "Light, practical, and stylish for beach activities"
+    },
+    {
+        "id": "outfit_047",
+        "name": "Cozy Winter Layers",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["daily", "college"],
+        "climate": ["cold"],
+        "age_group": ["young", "adult"],
+        "body_type": ["regular", "relaxed"],
+        "items": ["Oversized Sweater", "Leggings", "Puffer Jacket", "Ankle Boots"],
+        "colors": ["Cream", "Black", "Brown"],
+        "accessories": ["Beanie", "Scarf", "Crossbody Bag"],
+        "footwear": "Ankle Boots",
+        "budget": "medium",
+        "brands": ["Uniqlo", "Gap", "Steve Madden"],
+        "style_tags": ["cozy", "winter", "comfortable"],
+        "season": ["winter"],
+        "description": "Warm and stylish winter layers",
+        "reasoning": "Maximum warmth without sacrificing style"
+    },
+    {
+        "id": "outfit_048",
+        "name": "Vintage Mom Jeans",
+        "gender": "womens",
+        "occasion": "casual",
+        "occasion_subtype": ["college", "daily"],
+        "climate": ["moderate"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Cropped Cardigan", "Mom Jeans", "Platform Sneakers"],
+        "colors": ["Pastel", "Light Blue", "White"],
+        "accessories": ["90s Sunglasses", "Mini Backpack"],
+        "footwear": "Platform Sneakers",
+        "budget": "low",
+        "brands": ["Thrifted", "Zara", "Pull&Bear"],
+        "style_tags": ["vintage", "90s", "trendy"],
+        "season": ["spring", "fall"],
+        "description": "90s-inspired vintage vibes",
+        "reasoning": "Nostalgic and on-trend"
+    },
+    {
+        "id": "outfit_049",
+        "name": "Power Suit Executive",
+        "gender": "womens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting", "interview"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["adult", "senior"],
+        "body_type": ["slim", "regular"],
+        "items": ["Tailored Blazer", "Matching Trousers", "Silk Blouse", "Pointed Pumps"],
+        "colors": ["Black", "White"],
+        "accessories": ["Statement Watch", "Leather Tote"],
+        "footwear": "Pointed Pumps",
+        "budget": "high",
+        "brands": ["Theory", "Hugo Boss", "Max Mara"],
+        "style_tags": ["powerful", "executive", "professional"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Ultimate power dressing",
+        "reasoning": "Commands authority and respect"
+    },
+    {
+        "id": "outfit_050",
+        "name": "Soft Professional",
+        "gender": "womens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Soft Blazer", "Blouse", "Pencil Skirt", "Block Heels"],
+        "colors": ["Beige", "Cream", "Nude"],
+        "accessories": ["Delicate Jewelry", "Structured Handbag"],
+        "footwear": "Block Heels",
+        "budget": "medium",
+        "brands": ["Massimo Dutti", "Reiss", "J.Crew"],
+        "style_tags": ["sophisticated", "feminine", "professional"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Feminine professionalism",
+        "reasoning": "Approachable yet authoritative"
+    },
+    {
+        "id": "outfit_051",
+        "name": "Creative Director",
+        "gender": "womens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "meeting"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Statement Blazer", "Silk Camisole", "Wide-Leg Trousers", "Designer Loafers"],
+        "colors": ["Bold Colors", "Black", "Patterns"],
+        "accessories": ["Oversized Glasses", "Designer Bag"],
+        "footwear": "Designer Loafers",
+        "budget": "high",
+        "brands": ["Gucci", "Prada", "Stella McCartney"],
+        "style_tags": ["creative", "fashion-forward", "bold"],
+        "season": ["spring", "fall"],
+        "description": "Fashion meets function",
+        "reasoning": "Expresses creativity in professional setting"
+    },
+    {
+        "id": "outfit_052",
+        "name": "Summer Office Chic",
+        "gender": "womens",
+        "occasion": "formal",
+        "occasion_subtype": ["office"],
+        "climate": ["hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Sleeveless Blouse", "Linen Trousers", "Sandal Heels"],
+        "colors": ["White", "Beige", "Pastels"],
+        "accessories": ["Simple Jewelry", "Tote Bag"],
+        "footwear": "Sandal Heels",
+        "budget": "medium",
+        "brands": ["Banana Republic", "Ann Taylor", "Loft"],
+        "style_tags": ["summer-office", "breathable", "professional"],
+        "season": ["summer"],
+        "description": "Professional summer comfort",
+        "reasoning": "Keeps cool while maintaining professionalism"
+    },
+    {
+        "id": "outfit_053",
+        "name": "Monochrome Professional",
+        "gender": "womens",
+        "occasion": "formal",
+        "occasion_subtype": ["office", "interview"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Turtleneck", "Tailored Pants", "Blazer", "Ankle Boots"],
+        "colors": ["All Black", "All Navy", "All Grey"],
+        "accessories": ["Minimalist Watch", "Structured Bag"],
+        "footwear": "Ankle Boots",
+        "budget": "medium",
+        "brands": ["COS", "& Other Stories", "Zara"],
+        "style_tags": ["monochrome", "sleek", "modern"],
+        "season": ["fall", "winter"],
+        "description": "Sleek monochrome sophistication",
+        "reasoning": "Effortlessly chic and professional"
+    },
+    {
+        "id": "outfit_054",
+        "name": "Little Black Dress",
+        "gender": "womens",
+        "occasion": "party",
+        "occasion_subtype": ["night", "wedding"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Black Cocktail Dress", "Strappy Heels", "Clutch"],
+        "colors": ["Black"],
+        "accessories": ["Statement Earrings", "Delicate Necklace"],
+        "footwear": "Strappy Heels",
+        "budget": "medium",
+        "brands": ["ASOS", "Revolve", "Zara"],
+        "style_tags": ["classic", "elegant", "timeless"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Timeless LBD elegance",
+        "reasoning": "Can never go wrong with a classic black dress"
+    },
+    {
+        "id": "outfit_055",
+        "name": "Sequin Party Glam",
+        "gender": "womens",
+        "occasion": "party",
+        "occasion_subtype": ["night", "festival"],
+        "climate": ["moderate"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Sequin Mini Dress", "Platform Heels", "Mini Clutch"],
+        "colors": ["Gold", "Silver", "Rose Gold"],
+        "accessories": ["Statement Earrings", "Body Glitter"],
+        "footwear": "Platform Heels",
+        "budget": "low",
+        "brands": ["Pretty Little Thing", "Boohoo", "Missguided"],
+        "style_tags": ["party", "glamorous", "bold"],
+        "season": ["fall", "winter"],
+        "description": "Dazzling party ready",
+        "reasoning": "Stand out with sparkle and glamour"
+    },
+    {
+        "id": "outfit_056",
+        "name": "Wedding Guest Elegance",
+        "gender": "womens",
+        "occasion": "party",
+        "occasion_subtype": ["wedding"],
+        "climate": ["moderate", "hot"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Floral Midi Dress", "Block Heels", "Clutch"],
+        "colors": ["Pastel Florals", "Soft Colors"],
+        "accessories": ["Fascinator", "Pearl Earrings"],
+        "footwear": "Block Heels",
+        "budget": "medium",
+        "brands": ["Reformation", "Ted Baker", "Coast"],
+        "style_tags": ["wedding", "elegant", "feminine"],
+        "season": ["spring", "summer"],
+        "description": "Perfect wedding guest attire",
+        "reasoning": "Elegant without upstaging the bride"
+    },
+    {
+        "id": "outfit_057",
+        "name": "Cocktail Hour Chic",
+        "gender": "womens",
+        "occasion": "party",
+        "occasion_subtype": ["night"],
+        "climate": ["moderate"],
+        "age_group": ["adult"],
+        "body_type": ["regular", "relaxed"],
+        "items": ["Satin Slip Dress", "Heeled Sandals", "Evening Clutch"],
+        "colors": ["Emerald", "Burgundy", "Navy"],
+        "accessories": ["Gold Jewelry", "Shawl"],
+        "footwear": "Heeled Sandals",
+        "budget": "medium",
+        "brands": ["Anthropologie", "& Other Stories", "Mango"],
+        "style_tags": ["sophisticated", "cocktail", "elegant"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Sophisticated cocktail attire",
+        "reasoning": "Effortlessly chic for evening events"
+    },
+    {
+        "id": "outfit_058",
+        "name": "Festival Boho Queen",
+        "gender": "womens",
+        "occasion": "party",
+        "occasion_subtype": ["festival"],
+        "climate": ["hot"],
+        "age_group": ["young"],
+        "body_type": ["slim", "regular"],
+        "items": ["Crochet Top", "Denim Shorts", "Cowboy Boots", "Kimono"],
+        "colors": ["Earth Tones", "Vintage Wash"],
+        "accessories": ["Flower Crown", "Layered Jewelry", "Fringe Bag"],
+        "footwear": "Cowboy Boots",
+        "budget": "low",
+        "brands": ["Free People", "Urban Outfitters", "Festival Vendors"],
+        "style_tags": ["festival", "boho", "free-spirited"],
+        "season": ["summer"],
+        "description": "Ultimate festival style",
+        "reasoning": "Comfortable and Instagram-ready"
+    },
+    {
+        "id": "outfit_059",
+        "name": "Classic Saree Elegance",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["traditional", "festive"],
+        "climate": ["moderate", "hot"],
+        "age_group": ["adult", "senior"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Silk Saree", "Matching Blouse", "Petticoat", "Ethnic Sandals"],
+        "colors": ["Red", "Gold", "Traditional Colors"],
+        "accessories": ["Traditional Jewelry", "Clutch", "Bindi"],
+        "footwear": "Ethnic Sandals",
+        "budget": "high",
+        "brands": ["Sabyasachi", "Raw Mango", "Fabindia"],
+        "style_tags": ["traditional", "elegant", "classic"],
+        "season": ["fall", "winter", "spring"],
+        "description": "Timeless saree beauty",
+        "reasoning": "Ultimate traditional Indian elegance"
+    },
+    {
+        "id": "outfit_060",
+        "name": "Festive Anarkali",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["festive"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Embroidered Anarkali", "Churidar", "Dupatta", "Ethnic Jutis"],
+        "colors": ["Royal Blue", "Gold", "Pink"],
+        "accessories": ["Statement Earrings", "Bangles", "Clutch"],
+        "footwear": "Ethnic Jutis",
+        "budget": "medium",
+        "brands": ["Biba", "W", "Global Desi"],
+        "style_tags": ["festive", "graceful", "traditional"],
+        "season": ["fall", "winter"],
+        "description": "Flowing festive grace",
+        "reasoning": "Perfect for celebrations and festivals"
+    },
+    {
+        "id": "outfit_061",
+        "name": "Contemporary Kurta Set",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["traditional", "festive"],
+        "climate": ["hot", "moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular", "relaxed"],
+        "items": ["Cotton Kurta", "Palazzo Pants", "Dupatta"],
+        "colors": ["Pastel", "White", "Block Prints"],
+        "accessories": ["Oxidized Jewelry", "Juttis"],
+        "footwear": "Ethnic Juttis",
+        "budget": "low",
+        "brands": ["Fabindia", "Libas", "Aurelia"],
+        "style_tags": ["contemporary", "comfortable", "ethnic"],
+        "season": ["spring", "summer", "fall"],
+        "description": "Modern ethnic comfort",
+        "reasoning": "Blend of tradition and contemporary style"
+    },
+    {
+        "id": "outfit_062",
+        "name": "Wedding Lehenga",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["festive"],
+        "climate": ["moderate", "cold"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Embroidered Lehenga", "Choli", "Dupatta", "Heels"],
+        "colors": ["Red", "Pink", "Gold"],
+        "accessories": ["Heavy Jewelry Set", "Clutch", "Maang Tikka"],
+        "footwear": "Embellished Heels",
+        "budget": "high",
+        "brands": ["Sabyasachi", "Manish Malhotra", "Anita Dongre"],
+        "style_tags": ["bridal", "luxurious", "festive"],
+        "season": ["fall", "winter"],
+        "description": "Grand celebration attire",
+        "reasoning": "Show-stopping ethnic glamour"
+    },
+    {
+        "id": "outfit_063",
+        "name": "Indo-Western Fusion",
+        "gender": "womens",
+        "occasion": "ethnic",
+        "occasion_subtype": ["festive", "traditional"],
+        "climate": ["moderate"],
+        "age_group": ["young", "adult"],
+        "body_type": ["slim", "regular"],
+        "items": ["Cape Kurta", "Dhoti Pants", "Heeled Sandals"],
+        "colors": ["Monochrome", "Modern Palette"],
+        "accessories": ["Contemporary Jewelry", "Clutch"],
+        "footwear": "Heeled Sandals",
+        "budget": "medium",
+        "brands": ["AND Designs", "Label Ritu Kumar", "House of Masaba"],
+        "style_tags": ["fusion", "modern", "trendy"],
+        "season": ["spring", "fall"],
+        "description": "East meets West elegantly",
+        "reasoning": "Perfect fusion of cultures"
     }
 ]
 
@@ -549,13 +1419,13 @@ def calculate_outfit_score(outfit, clothing_style, occasion, occasion_subtype, c
     
     # Medium Priority: Body Type (Enhanced)
     if body_type in outfit.get("body_type", []):
-        score += 60 # Increased weight
+        score += 60
     
     # Medium Priority: Budget (Enhanced)
     if outfit["budget"] == budget:
-        score += 40 # Increased weight
+        score += 40
     elif (budget == "medium" and (outfit["budget"] == "low")) or (budget == "high"):
-        score += 20 # Partial match
+        score += 20
     
     return score
 
@@ -718,16 +1588,13 @@ def register():
     if not email or not password:
         return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
     
-    # Check if user already exists
     existing_user = User.find_by_email(email)
     if existing_user:
         return jsonify({'status': 'error', 'message': 'User already exists'}), 400
     
-    # Create user
     password_hash = hash_password(password)
     user = User.create(email, password_hash, profile)
     
-    # Generate JWT token
     token = generate_jwt_token(user['_id'], email)
     
     return jsonify({
@@ -754,16 +1621,13 @@ def login():
     if not email or not password:
         return jsonify({'status': 'error', 'message': 'Email and password are required'}), 400
     
-    # Find user
     user = User.find_by_email(email)
     if not user:
         return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
     
-    # Verify password
     if not verify_password(password, user['password_hash']):
         return jsonify({'status': 'error', 'message': 'Invalid credentials'}), 401
     
-    # Generate JWT token
     token = generate_jwt_token(user['_id'], email)
     
     return jsonify({
@@ -789,23 +1653,18 @@ def request_magic_link():
     if not email:
         return jsonify({'status': 'error', 'message': 'Email is required'}), 400
     
-    # Check if user exists, if not create a new user
     user = User.find_by_email(email)
     if not user:
-        # Auto-create user for magic link
-        password_hash = hash_password(secrets.token_urlsafe(32))  # Random password
+        password_hash = hash_password(secrets.token_urlsafe(32))
         user = User.create(email, password_hash)
     
-    # Generate magic link token
     token = generate_magic_link_token(email)
-    
-    # Send email
     send_magic_link_email(email, token)
     
     return jsonify({
         'status': 'success',
         'message': 'Magic link sent to your email',
-        'dev_token': token if not os.getenv('SMTP_USER') else None  # Only in dev mode
+        'dev_token': token if not os.getenv('SMTP_USER') else None
     })
 
 @app.route('/auth/verify-magic', methods=['POST'])
@@ -820,17 +1679,14 @@ def verify_magic():
     if not token:
         return jsonify({'status': 'error', 'message': 'Token is required'}), 400
     
-    # Verify token
     email = verify_magic_link_token(token)
     if not email:
         return jsonify({'status': 'error', 'message': 'Invalid or expired token'}), 401
     
-    # Find user
     user = User.find_by_email(email)
     if not user:
         return jsonify({'status': 'error', 'message': 'User not found'}), 404
     
-    # Generate JWT token
     jwt_token = generate_jwt_token(user['_id'], email)
     
     return jsonify({
@@ -911,7 +1767,6 @@ def get_wardrobe_items():
     
     items = WardrobeItem.get_user_wardrobe(request.current_user['user_id'], filters)
     
-    # Convert ObjectId to string
     for item in items:
         item['_id'] = str(item['_id'])
         item['user_id'] = str(item['user_id'])
@@ -988,13 +1843,13 @@ def get_wardrobe_stats():
     })
 
 # ============================================================================
-# INSIGHTS ENDPOINTS (KILLER FEATURE)
+# INSIGHTS ENDPOINTS
 # ============================================================================
 
 @app.route('/insights/gaps', methods=['GET'])
 @token_required
 def get_wardrobe_gaps():
-    """Get wardrobe gap analysis - KILLER FEATURE"""
+    """Get wardrobe gap analysis"""
     if not MONGODB_ENABLED:
         return jsonify({'status': 'error', 'message': 'Database not configured'}), 500
     
@@ -1002,10 +1857,8 @@ def get_wardrobe_gaps():
     if not user:
         return jsonify({'status': 'error', 'message': 'User not found'}), 404
     
-    # Analyze gaps
     gaps = analyze_wardrobe_gaps(request.current_user['user_id'], user['profile'])
     
-    # Add shopping links to each gap
     for gap in gaps:
         query = gap.get('shopping_query', gap.get('item_name', ''))
         encoded_query = quote_plus(query)
@@ -1037,7 +1890,7 @@ def get_wardrobe_balance():
     })
 
 # ============================================================================
-# EXISTING ENDPOINTS (Enhanced with user context)
+# MAIN PREDICTION ENDPOINT
 # ============================================================================
 
 @app.route('/', methods=['GET'])
@@ -1046,6 +1899,7 @@ def index():
         "status": "running", 
         "message": "Fashion Recommendation API is active",
         "version": "2.0",
+        "total_outfits": len(OUTFIT_DATABASE),
         "features": {
             "guest_mode": True,
             "user_accounts": MONGODB_ENABLED,
@@ -1057,9 +1911,10 @@ def index():
 @app.route('/predict', methods=['POST'])
 @optional_token
 def predict():
-    """Generate outfit recommendations (works with or without authentication)"""
+    """Generate outfit recommendations"""
     if 'image' not in request.files:
         return jsonify({"status": "error", "message": "No image file provided"}), 400
+    
     file = request.files['image']
     if file.filename == '':
         return jsonify({"status": "error", "message": "No file selected"}), 400
@@ -1077,7 +1932,6 @@ def predict():
     skin_tone = request.form.get('skin_tone', '')
     undertone = request.form.get('undertone', '')
     
-    # If user is authenticated, use their profile preferences
     if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
         user = User.find_by_id(request.current_user['user_id'])
         if user and user.get('profile'):
@@ -1127,9 +1981,8 @@ def predict():
         )
         outfit_copy["average_rating"] = get_outfit_rating(outfit["id"])
         
-        # Add wardrobe context if user is authenticated
         if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
-            outfit_copy["in_wardrobe"] = False  # Can be enhanced to check actual wardrobe
+            outfit_copy["in_wardrobe"] = False
         
         result_outfits.append(outfit_copy)
     
@@ -1152,7 +2005,6 @@ def predict():
         }
     }
     
-    # Add wardrobe insights if user is authenticated
     if MONGODB_ENABLED and hasattr(request, 'current_user') and request.current_user:
         response_data["user_context"] = {
             "authenticated": True,
@@ -1162,12 +2014,10 @@ def predict():
     return jsonify(response_data)
 
 if __name__ == '__main__':
-    # Use PORT from environment or default to 5000
     port = int(os.environ.get("PORT", 5000))
     
     if MONGODB_ENABLED:
         try:
-            # Attempt a quick init but don't crash if DB is down at startup
             init_db()
         except Exception as e:
             print(f"DEBUG: Error in app.py main: {e}", flush=True)
