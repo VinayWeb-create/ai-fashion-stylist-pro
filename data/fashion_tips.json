@@ -1,0 +1,50 @@
+{
+    "casual_hot": [
+        "Choose breathable fabrics like cotton and linen for maximum comfort",
+        "Light colors reflect heat better and keep you cooler"
+    ],
+    "casual_moderate": [
+        "Layer with lightweight pieces for versatile styling",
+        "Mix textures to add visual interest to your outfit"
+    ],
+    "casual_cold": [
+        "Layer strategically with base, mid, and outer layers",
+        "Invest in quality outerwear that complements your wardrobe"
+    ],
+    "formal_hot": [
+        "Opt for lightweight formal fabrics to stay cool and professional",
+        "Choose tailored fits that allow air circulation"
+    ],
+    "formal_moderate": [
+        "Classic silhouettes never go out of style",
+        "Ensure proper fit for a polished appearance"
+    ],
+    "formal_cold": [
+        "Wool and wool-blend suits provide warmth and sophistication",
+        "Layer with dress shirts and vests for added warmth"
+    ],
+    "party_hot": [
+        "Choose statement pieces in breathable fabrics",
+        "Bold accessories elevate your party look"
+    ],
+    "party_moderate": [
+        "Balance comfort with glamour for all-night confidence",
+        "Metallic accents add festive flair"
+    ],
+    "party_cold": [
+        "Layer with elegant wraps or shawls",
+        "Rich fabrics like velvet add luxury"
+    ],
+    "ethnic_hot": [
+        "Choose lightweight traditional fabrics like cotton or linen blends",
+        "Traditional silhouettes in breathable materials work best"
+    ],
+    "ethnic_moderate": [
+        "Silk and cotton blends offer comfort and elegance",
+        "Traditional jewelry completes the ethnic look"
+    ],
+    "ethnic_cold": [
+        "Layer with traditional shawls or dupattas",
+        "Rich fabrics like silk and brocade add warmth"
+    ]
+}
