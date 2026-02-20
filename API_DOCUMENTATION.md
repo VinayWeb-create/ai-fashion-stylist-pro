@@ -528,3 +528,63 @@ Currently no rate limiting implemented. Will be added in production.
 ## CORS
 
 CORS is enabled for all origins in development. Configure appropriately for production.
+
+---
+
+## Outfit Engagement Endpoints
+
+### Get Outfit Rating
+**GET** `/outfits/<outfit_id>/rating`
+
+Get average rating and rating count for a specific outfit.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "outfit_id": "outfit_001",
+  "average_rating": 4.5,
+  "total_ratings": 12
+}
+```
+
+### Add Outfit Rating
+**POST** `/outfits/<outfit_id>/rating`
+
+Submit a rating from 1 to 5.
+
+**Request Body:**
+```json
+{
+  "rating": 5
+}
+```
+
+### Get Favorites
+**GET** `/outfits/favorites?device_id=<device_id>`
+
+Get all favorited outfits associated with a client `device_id`.
+
+### Add Favorite
+**POST** `/outfits/<outfit_id>/favorite`
+
+Add an outfit to favorites.
+
+**Request Body:**
+```json
+{
+  "device_id": "web-user-123"
+}
+```
+
+### Remove Favorite
+**DELETE** `/outfits/<outfit_id>/favorite`
+
+Remove an outfit from favorites.
+
+**Request Body:**
+```json
+{
+  "device_id": "web-user-123"
+}
+```
