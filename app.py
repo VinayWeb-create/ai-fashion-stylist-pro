@@ -59,13 +59,24 @@ def allowed_file(filename):
 
 def load_json_file(filepath, default):
     if os.path.exists(filepath):
-        with open(filepath, 'r') as f:
-            return json.load(f)
+        try:
+            with open(filepath, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return default
     return default
 
 def save_json_file(filepath, data):
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
+
+def outfit_exists(outfit_id):
+    return any(outfit.get('id') == outfit_id for outfit in OUTFIT_DATABASE)
+
+def normalize_device_id(device_id):
+    if not isinstance(device_id, str):
+        return ''
+    return device_id.strip()[:128]
 
 # ============================================================================
 # EXPANDED OUTFIT DATABASE - 63 Premium Outfits
@@ -1906,6 +1917,111 @@ def index():
             "digital_wardrobe": MONGODB_ENABLED,
             "wardrobe_intelligence": MONGODB_ENABLED
         }
+    })
+
+@app.route('/outfits/<outfit_id>/rating', methods=['GET'])
+def get_rating(outfit_id):
+    """Get rating stats for a specific outfit"""
+    if not outfit_exists(outfit_id):
+        return jsonify({'status': 'error', 'message': 'Outfit not found'}), 404
+
+    ratings = load_json_file(RATINGS_FILE, {})
+    outfit_ratings = ratings.get(outfit_id, [])
+    avg_rating = get_outfit_rating(outfit_id)
+
+    return jsonify({
+        'status': 'success',
+        'outfit_id': outfit_id,
+        'average_rating': avg_rating,
+        'total_ratings': len(outfit_ratings)
+    })
+
+@app.route('/outfits/<outfit_id>/rating', methods=['POST'])
+def add_rating(outfit_id):
+    """Add a rating (1-5) for a specific outfit"""
+    if not outfit_exists(outfit_id):
+        return jsonify({'status': 'error', 'message': 'Outfit not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+    rating = data.get('rating')
+
+    if not isinstance(rating, int) or rating < 1 or rating > 5:
+        return jsonify({'status': 'error', 'message': 'Rating must be an integer between 1 and 5'}), 400
+
+    ratings = load_json_file(RATINGS_FILE, {})
+    ratings.setdefault(outfit_id, []).append(rating)
+    save_json_file(RATINGS_FILE, ratings)
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Rating submitted',
+        'outfit_id': outfit_id,
+        'average_rating': get_outfit_rating(outfit_id),
+        'total_ratings': len(ratings[outfit_id])
+    }), 201
+
+@app.route('/outfits/favorites', methods=['GET'])
+def get_favorites():
+    """Get favorite outfits for a device_id"""
+    device_id = normalize_device_id(request.args.get('device_id', ''))
+    if not device_id:
+        return jsonify({'status': 'error', 'message': 'device_id query parameter is required'}), 400
+
+    favorites = load_json_file(FAVORITES_FILE, {})
+    favorite_ids = favorites.get(device_id, [])
+    favorite_outfits = [outfit for outfit in OUTFIT_DATABASE if outfit['id'] in favorite_ids]
+
+    return jsonify({
+        'status': 'success',
+        'device_id': device_id,
+        'favorites': favorite_outfits,
+        'count': len(favorite_outfits)
+    })
+
+@app.route('/outfits/<outfit_id>/favorite', methods=['POST'])
+def add_favorite(outfit_id):
+    """Add an outfit to favorites for a device_id"""
+    if not outfit_exists(outfit_id):
+        return jsonify({'status': 'error', 'message': 'Outfit not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+    device_id = normalize_device_id(data.get('device_id', ''))
+    if not device_id:
+        return jsonify({'status': 'error', 'message': 'device_id is required'}), 400
+
+    favorites = load_json_file(FAVORITES_FILE, {})
+    existing_favorites = set(favorites.get(device_id, []))
+    existing_favorites.add(outfit_id)
+    favorites[device_id] = sorted(existing_favorites)
+    save_json_file(FAVORITES_FILE, favorites)
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Outfit added to favorites',
+        'device_id': device_id,
+        'favorites': favorites[device_id]
+    }), 201
+
+@app.route('/outfits/<outfit_id>/favorite', methods=['DELETE'])
+def remove_favorite(outfit_id):
+    """Remove an outfit from favorites for a device_id"""
+    data = request.get_json(silent=True) or {}
+    device_id = normalize_device_id(data.get('device_id', ''))
+    if not device_id:
+        return jsonify({'status': 'error', 'message': 'device_id is required'}), 400
+
+    favorites = load_json_file(FAVORITES_FILE, {})
+    existing_favorites = set(favorites.get(device_id, []))
+    if outfit_id in existing_favorites:
+        existing_favorites.remove(outfit_id)
+    favorites[device_id] = sorted(existing_favorites)
+    save_json_file(FAVORITES_FILE, favorites)
+
+    return jsonify({
+        'status': 'success',
+        'message': 'Outfit removed from favorites',
+        'device_id': device_id,
+        'favorites': favorites[device_id]
     })
 
 @app.route('/predict', methods=['POST'])
